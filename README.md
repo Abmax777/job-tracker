@@ -1,16 +1,36 @@
-# React + Vite
+# 🚀 JobTracker
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A personal job application and referral tracking dashboard built with React, Vite, and Google Sheets as the backend.
 
-Currently, two official plugins are available:
+## Live App
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+🔗 https://abmax777.github.io/job-tracker/
 
-## React Compiler
+## Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Applications** — Track job applications across LinkedIn, Naukri, Instahyre and more
+- **Referrals** — Log referral outreaches with daily 3/day goal tracker and follow-up reminders
+- **Interviews** — Track interview rounds, outcomes and upcoming schedules
+- **Dashboard** — Pipeline overview, charts, recent activity and follow-up alerts
+- **Google Sheets backend** — All data syncs to a Google Sheet, accessible anywhere
 
-## Expanding the ESLint configuration
+## Tech Stack
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- React + Vite
+- Tailwind CSS
+- Google Sheets API + Apps Script
+- Recharts
+- GitHub Pages (hosting)
+
+## Local Development
+
+```bash
+npm install
+npm run dev
+```
+
+## Deploy
+
+```bash
+npm run deploy
+```
