@@ -85,10 +85,10 @@ export default function Dashboard() {
           { label: "Offers",       value: stats.offers,             icon: Award,      color: "#3fb950", sub: "received"     },
         ].map(({ label, value, icon: Icon, color, sub }) => (
           <div key={label} style={{
-            background: "#0f0f0f", padding: "28px 24px",
+            background: "161616", padding: "28px 24px",
             transition: "background 0.2s ease", cursor: "default"
           }}
-            onMouseEnter={e => e.currentTarget.style.background = "#141414"}
+            onMouseEnter={e => e.currentTarget.style.background = "#161616"}
             onMouseLeave={e => e.currentTarget.style.background = "#0f0f0f"}
           >
             <Icon size={16} color={color} strokeWidth={1.8} style={{ marginBottom: "16px" }} />
@@ -113,10 +113,10 @@ export default function Dashboard() {
             {pipelineData.map(stage => (
               <div key={stage.status} style={{
                 display: "flex", alignItems: "center", justifyContent: "space-between",
-                padding: "12px 16px", borderRadius: "8px", background: "#0f0f0f",
+                padding: "12px 16px", borderRadius: "8px", background: "161616",
                 transition: "background 0.15s", cursor: "default"
               }}
-                onMouseEnter={e => e.currentTarget.style.background = "#141414"}
+                onMouseEnter={e => e.currentTarget.style.background = "#161616"}
                 onMouseLeave={e => e.currentTarget.style.background = "#0f0f0f"}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
@@ -136,7 +136,7 @@ export default function Dashboard() {
           <h2 style={{ fontSize: "11px", fontWeight: "600", color: "#444", letterSpacing: "0.08em", marginBottom: "16px" }}>
             VISUAL BREAKDOWN
           </h2>
-          <div style={{ background: "#0f0f0f", borderRadius: "8px", padding: "20px" }}>
+          <div style={{ background: "161616", borderRadius: "8px", padding: "20px" }}>
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={barData} barSize={20}>
                 <XAxis dataKey="name" tick={{ fontSize: 10, fill: "#555" }} axisLine={false} tickLine={false} />
@@ -168,10 +168,10 @@ export default function Dashboard() {
             ) : recentApps.map((app, i) => (
               <div key={i} style={{
                 display: "flex", alignItems: "center", justifyContent: "space-between",
-                padding: "12px 16px", borderRadius: "8px", background: "#0f0f0f",
+                padding: "12px 16px", borderRadius: "8px", background: "161616",
                 transition: "background 0.15s"
               }}
-                onMouseEnter={e => e.currentTarget.style.background = "#141414"}
+                onMouseEnter={e => e.currentTarget.style.background = "#161616"}
                 onMouseLeave={e => e.currentTarget.style.background = "#0f0f0f"}
               >
                 <div>
@@ -198,10 +198,10 @@ export default function Dashboard() {
             ) : recentReferrals.map((ref, i) => (
               <div key={i} style={{
                 display: "flex", alignItems: "center", justifyContent: "space-between",
-                padding: "12px 16px", borderRadius: "8px", background: "#0f0f0f",
+                padding: "12px 16px", borderRadius: "8px", background: "161616",
                 transition: "background 0.15s"
               }}
-                onMouseEnter={e => e.currentTarget.style.background = "#141414"}
+                onMouseEnter={e => e.currentTarget.style.background = "#161616"}
                 onMouseLeave={e => e.currentTarget.style.background = "#0f0f0f"}
               >
                 <div>

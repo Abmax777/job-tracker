@@ -23,7 +23,7 @@ export default function Sidebar() {
   return (
     <aside style={{
       position: "fixed", top: 0, left: 0, height: "100vh", width: "220px",
-      background: "#0a0a0a", borderRight: "1px solid #1a1a1a",
+      background: "#0f0f0f", borderRight: "1px solid #1a1a1a",
       display: "flex", flexDirection: "column", padding: "0",
       zIndex: 40
     }}>

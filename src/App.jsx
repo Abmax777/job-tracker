@@ -10,7 +10,7 @@ import Interviews from "./pages/Interviews"
 export default function App() {
   return (
     <AppProvider>
-      <BrowserRouter basename="/job-tracker/">
+      <BrowserRouter basename={import.meta.env.DEV ? "/" : "/job-tracker/"}>
         <div className="flex min-h-screen" style={{ background: "#141414" }}>
           <Sidebar />
           <main style={{ marginLeft: "224px", padding: "24px", flex: 1 }}>
