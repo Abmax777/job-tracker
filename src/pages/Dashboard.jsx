@@ -2,58 +2,48 @@ import { useApp } from "../context/AppContext"
 import FollowUpAlert from "../components/FollowUpAlert"
 import StatusBadge from "../components/StatusBadge"
 import { formatDate } from "../services/sheetsService"
-import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, AreaChart, Area
-} from "recharts"
+import { TrendingUp, Users, FileText, Award, ChevronRight } from "lucide-react"
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts"
 
 const PIPELINE = [
-  { status: "Applied",             color: "#58a6ff" },
-  { status: "Referral Pending",    color: "#d29922" },
-  { status: "In Review",           color: "#bc8cff" },
-  { status: "Interview Scheduled", color: "#3fb950" },
-  { status: "Offer",               color: "#3fb950" },
-  { status: "Rejected",            color: "#f85149" },
+  { status: "Applied",             color: "#58a6ff", short: "Applied"   },
+  { status: "Referral Pending",    color: "#f5a623", short: "Referral"  },
+  { status: "In Review",           color: "#bc8cff", short: "Review"    },
+  { status: "Interview Scheduled", color: "#3fb950", short: "Interview" },
+  { status: "Offer",               color: "#3fb950", short: "Offer"     },
+  { status: "Rejected",            color: "#f85149", short: "Rejected"  },
 ]
 
-const CARD_STYLE = {
-  background: "#161b22",
-  border: "1px solid #21262d",
-  borderRadius: "12px",
-  padding: "20px"
-}
-
-const CUSTOM_TOOLTIP_STYLE = {
-  background: "#161b22",
-  border: "1px solid #21262d",
-  borderRadius: "8px",
-  color: "#e6edf3",
-  fontSize: "12px"
-}
-
-export default function Dashboard() {
-  const { applications, referrals, interviews, stats, loading } = useApp()
-
-  if (loading) {
+const CustomTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-sm animate-pulse" style={{ color: "#8b949e" }}>Loading mission control...</div>
+      <div style={{ background: "#1a1a1a", border: "1px solid #222", borderRadius: "8px", padding: "10px 14px" }}>
+        <p style={{ color: "#888", fontSize: "11px", margin: "0 0 4px" }}>{label}</p>
+        <p style={{ color: "#fff", fontSize: "14px", fontWeight: "700", margin: 0 }}>{payload[0].value}</p>
       </div>
     )
   }
+  return null
+}
+
+export default function Dashboard() {
+  const { applications, referrals, stats, loading } = useApp()
+
+  if (loading) return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "60vh" }}>
+      <div style={{ textAlign: "center" }}>
+        <div style={{ width: "32px", height: "32px", border: "2px solid #222", borderTop: "2px solid #58a6ff", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 12px" }} />
+        <p style={{ color: "#555", fontSize: "13px" }}>Loading...</p>
+      </div>
+    </div>
+  )
 
   const pipelineData = PIPELINE.map(p => ({
     ...p,
     count: applications.filter(a => a.Status === p.status).length
   }))
 
-  const barData = pipelineData.map(p => ({
-    name: p.status.split(" ")[0],
-    count: p.count,
-    fill: p.color
-  }))
-
-  const pieData = pipelineData.filter(p => p.count > 0)
+  const barData = pipelineData.map(p => ({ name: p.short, count: p.count, color: p.color }))
 
   const recentApps = [...applications]
     .sort((a, b) => new Date(b["Date Applied"]) - new Date(a["Date Applied"]))
@@ -61,153 +51,176 @@ export default function Dashboard() {
 
   const recentReferrals = [...referrals]
     .sort((a, b) => new Date(b["Date Sent"]) - new Date(a["Date Sent"]))
-    .slice(0, 5)
+    .slice(0, 4)
+
+  const today = new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" })
 
   return (
-    <div className="space-y-6">
+    <div style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
 
-      {/* Page title */}
-      <div>
-        <h1 className="text-2xl font-bold" style={{ color: "#e6edf3" }}>Mission Control</h1>
-        <p className="text-sm mt-1" style={{ color: "#8b949e" }}>
-          {new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+      {/* Hero header */}
+      <div style={{ borderBottom: "1px solid #1a1a1a", paddingBottom: "24px" }}>
+        <p style={{ color: "#555", fontSize: "12px", marginBottom: "6px", letterSpacing: "0.05em" }}>
+          {today.toUpperCase()}
+        </p>
+        <h1 style={{ fontSize: "32px", fontWeight: "800", color: "#ffffff", margin: 0, letterSpacing: "-0.5px" }}>
+          Mission Control
+        </h1>
+        <p style={{ color: "#555", fontSize: "13px", marginTop: "6px", margin: "6px 0 0" }}>
+          {stats.activeApplications > 0
+            ? `${stats.activeApplications} active applications in your pipeline`
+            : "Start applying to build your pipeline"
+          }
         </p>
       </div>
 
       <FollowUpAlert />
 
-      {/* Stat cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {/* Big stat numbers — Netflix style */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "1px", background: "#1a1a1a", borderRadius: "12px", overflow: "hidden" }}>
         {[
-          { label: "Total Applications", value: stats.totalApplications, color: "#58a6ff", icon: "📋" },
-          { label: "Active Pipeline",    value: stats.activeApplications, color: "#bc8cff", icon: "⚡" },
-          { label: "Referrals Sent",     value: stats.totalReferrals,     color: "#d29922", icon: "🤝" },
-          { label: "Offers",             value: stats.offers,             color: "#3fb950", icon: "🎉" },
-        ].map(({ label, value, color, icon }) => (
-          <div
-            key={label}
-            style={{
-              ...CARD_STYLE,
-              borderTop: `2px solid ${color}`,
-            }}
+          { label: "Applications", value: stats.totalApplications, icon: FileText,   color: "#58a6ff", sub: "total sent"    },
+          { label: "Active",       value: stats.activeApplications, icon: TrendingUp, color: "#ffffff", sub: "in pipeline"  },
+          { label: "Referrals",    value: stats.totalReferrals,     icon: Users,      color: "#f5a623", sub: "messages sent"},
+          { label: "Offers",       value: stats.offers,             icon: Award,      color: "#3fb950", sub: "received"     },
+        ].map(({ label, value, icon: Icon, color, sub }) => (
+          <div key={label} style={{
+            background: "#0f0f0f", padding: "28px 24px",
+            transition: "background 0.2s ease", cursor: "default"
+          }}
+            onMouseEnter={e => e.currentTarget.style.background = "#141414"}
+            onMouseLeave={e => e.currentTarget.style.background = "#0f0f0f"}
           >
-            <div className="text-xl mb-2">{icon}</div>
-            <div className="text-3xl font-bold mb-1" style={{ color }}>{value}</div>
-            <div className="text-xs" style={{ color: "#8b949e" }}>{label}</div>
+            <Icon size={16} color={color} strokeWidth={1.8} style={{ marginBottom: "16px" }} />
+            <div style={{ fontSize: "42px", fontWeight: "800", color, lineHeight: 1, letterSpacing: "-1px" }}>
+              {value}
+            </div>
+            <div style={{ fontSize: "13px", fontWeight: "600", color: "#fff", marginTop: "8px" }}>{label}</div>
+            <div style={{ fontSize: "11px", color: "#444", marginTop: "2px" }}>{sub}</div>
           </div>
         ))}
       </div>
 
-      {/* Pipeline */}
-      <div style={CARD_STYLE}>
-        <h2 className="text-sm font-semibold mb-4" style={{ color: "#8b949e", letterSpacing: "0.05em" }}>
-          APPLICATION PIPELINE
-        </h2>
-        <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
-          {pipelineData.map(stage => (
-            <div
-              key={stage.status}
-              className="rounded-xl p-3 text-center"
-              style={{ background: `${stage.color}12`, border: `1px solid ${stage.color}30` }}
-            >
-              <div className="text-2xl font-bold" style={{ color: stage.color }}>{stage.count}</div>
-              <div className="text-xs mt-1 leading-tight" style={{ color: "#8b949e" }}>{stage.status}</div>
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* Pipeline + Chart */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
 
-      {/* Charts */}
-      {applications.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div style={CARD_STYLE}>
-            <h2 className="text-sm font-semibold mb-4" style={{ color: "#8b949e", letterSpacing: "0.05em" }}>
-              BY STATUS
-            </h2>
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={barData} barSize={28}>
-                <XAxis dataKey="name" tick={{ fontSize: 10, fill: "#8b949e" }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 10, fill: "#8b949e" }} axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={CUSTOM_TOOLTIP_STYLE} cursor={{ fill: "rgba(255,255,255,0.03)" }} />
+        {/* Pipeline stages */}
+        <div>
+          <h2 style={{ fontSize: "11px", fontWeight: "600", color: "#444", letterSpacing: "0.08em", marginBottom: "16px" }}>
+            PIPELINE BREAKDOWN
+          </h2>
+          <div style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
+            {pipelineData.map(stage => (
+              <div key={stage.status} style={{
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                padding: "12px 16px", borderRadius: "8px", background: "#0f0f0f",
+                transition: "background 0.15s", cursor: "default"
+              }}
+                onMouseEnter={e => e.currentTarget.style.background = "#141414"}
+                onMouseLeave={e => e.currentTarget.style.background = "#0f0f0f"}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  <div style={{ width: "3px", height: "20px", borderRadius: "2px", background: stage.color }} />
+                  <span style={{ fontSize: "13px", color: "#888" }}>{stage.status}</span>
+                </div>
+                <span style={{ fontSize: "20px", fontWeight: "700", color: stage.count > 0 ? stage.color : "#333" }}>
+                  {stage.count}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Bar chart */}
+        <div>
+          <h2 style={{ fontSize: "11px", fontWeight: "600", color: "#444", letterSpacing: "0.08em", marginBottom: "16px" }}>
+            VISUAL BREAKDOWN
+          </h2>
+          <div style={{ background: "#0f0f0f", borderRadius: "8px", padding: "20px" }}>
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={barData} barSize={20}>
+                <XAxis dataKey="name" tick={{ fontSize: 10, fill: "#555" }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: "#555" }} axisLine={false} tickLine={false} />
+                <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(255,255,255,0.02)" }} />
                 <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-                  {barData.map((entry, i) => (
-                    <Cell key={i} fill={entry.fill} />
-                  ))}
+                  {barData.map((entry, i) => <Cell key={i} fill={entry.color} opacity={entry.count === 0 ? 0.2 : 1} />)}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
-
-          <div style={CARD_STYLE}>
-            <h2 className="text-sm font-semibold mb-4" style={{ color: "#8b949e", letterSpacing: "0.05em" }}>
-              PIPELINE SPLIT
-            </h2>
-            <ResponsiveContainer width="100%" height={200}>
-              <PieChart>
-                <Pie
-                  data={pieData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={55}
-                  outerRadius={80}
-                  dataKey="count"
-                  paddingAngle={3}
-                >
-                  {pieData.map((entry, i) => (
-                    <Cell key={i} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip contentStyle={CUSTOM_TOOLTIP_STYLE} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      )}
-
-      {/* Recent activity */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div style={CARD_STYLE}>
-          <h2 className="text-sm font-semibold mb-4" style={{ color: "#8b949e", letterSpacing: "0.05em" }}>
-            RECENT APPLICATIONS
-          </h2>
-          {recentApps.length === 0 ? (
-            <p className="text-sm" style={{ color: "#8b949e" }}>No applications yet — start applying!</p>
-          ) : (
-            <div className="space-y-3">
-              {recentApps.map((app, i) => (
-                <div key={i} className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium" style={{ color: "#e6edf3" }}>{app.Company}</p>
-                    <p className="text-xs mt-0.5" style={{ color: "#8b949e" }}>{app.Role} · {formatDate(app["Date Applied"])}</p>
-                  </div>
-                  <StatusBadge status={app.Status} />
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div style={CARD_STYLE}>
-          <h2 className="text-sm font-semibold mb-4" style={{ color: "#8b949e", letterSpacing: "0.05em" }}>
-            RECENT REFERRALS
-          </h2>
-          {recentReferrals.length === 0 ? (
-            <p className="text-sm" style={{ color: "#8b949e" }}>No referrals logged — aim for 3 today!</p>
-          ) : (
-            <div className="space-y-3">
-              {recentReferrals.map((ref, i) => (
-                <div key={i} className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium" style={{ color: "#e6edf3" }}>{ref.Company}</p>
-                    <p className="text-xs mt-0.5" style={{ color: "#8b949e" }}>{ref["Person Name"]} · {formatDate(ref["Date Sent"])}</p>
-                  </div>
-                  <StatusBadge status={ref.Response} />
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       </div>
+
+      {/* Recent activity */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
+
+        {/* Recent applications */}
+        <div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
+            <h2 style={{ fontSize: "11px", fontWeight: "600", color: "#444", letterSpacing: "0.08em", margin: 0 }}>
+              RECENT APPLICATIONS
+            </h2>
+            <ChevronRight size={14} color="#444" />
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
+            {recentApps.length === 0 ? (
+              <p style={{ color: "#444", fontSize: "13px", padding: "16px 0" }}>No applications yet</p>
+            ) : recentApps.map((app, i) => (
+              <div key={i} style={{
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                padding: "12px 16px", borderRadius: "8px", background: "#0f0f0f",
+                transition: "background 0.15s"
+              }}
+                onMouseEnter={e => e.currentTarget.style.background = "#141414"}
+                onMouseLeave={e => e.currentTarget.style.background = "#0f0f0f"}
+              >
+                <div>
+                  <p style={{ fontSize: "13px", fontWeight: "600", color: "#e0e0e0", margin: 0 }}>{app.Company}</p>
+                  <p style={{ fontSize: "11px", color: "#555", margin: "2px 0 0" }}>{app.Role} · {formatDate(app["Date Applied"])}</p>
+                </div>
+                <StatusBadge status={app.Status} />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Recent referrals */}
+        <div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
+            <h2 style={{ fontSize: "11px", fontWeight: "600", color: "#444", letterSpacing: "0.08em", margin: 0 }}>
+              RECENT REFERRALS
+            </h2>
+            <ChevronRight size={14} color="#444" />
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
+            {recentReferrals.length === 0 ? (
+              <p style={{ color: "#444", fontSize: "13px", padding: "16px 0" }}>No referrals yet — aim for 3 today</p>
+            ) : recentReferrals.map((ref, i) => (
+              <div key={i} style={{
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                padding: "12px 16px", borderRadius: "8px", background: "#0f0f0f",
+                transition: "background 0.15s"
+              }}
+                onMouseEnter={e => e.currentTarget.style.background = "#141414"}
+                onMouseLeave={e => e.currentTarget.style.background = "#0f0f0f"}
+              >
+                <div>
+                  <p style={{ fontSize: "13px", fontWeight: "600", color: "#e0e0e0", margin: 0 }}>{ref.Company}</p>
+                  <p style={{ fontSize: "11px", color: "#555", margin: "2px 0 0" }}>{ref["Person Name"]} · {formatDate(ref["Date Sent"])}</p>
+                </div>
+                <StatusBadge status={ref.Response} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   )
 }

@@ -1,11 +1,14 @@
 import { NavLink } from "react-router-dom"
 import { useApp } from "../context/AppContext"
+import {
+  LayoutDashboard, FileText, Users, Calendar, TrendingUp
+} from "lucide-react"
 
 const NAV_ITEMS = [
-  { to: "/dashboard",    icon: "⚡", label: "Dashboard"    },
-  { to: "/applications", icon: "📋", label: "Applications" },
-  { to: "/referrals",    icon: "🤝", label: "Referrals"    },
-  { to: "/interviews",   icon: "🎯", label: "Interviews"   },
+  { to: "/dashboard",    icon: LayoutDashboard, label: "Dashboard"    },
+  { to: "/applications", icon: FileText,         label: "Applications" },
+  { to: "/referrals",    icon: Users,            label: "Referrals"    },
+  { to: "/interviews",   icon: Calendar,         label: "Interviews"   },
 ]
 
 export default function Sidebar() {
@@ -18,77 +21,95 @@ export default function Sidebar() {
   }
 
   return (
-    <aside
-      className="fixed top-0 left-0 h-full w-56 flex flex-col py-6 px-3 z-40"
-      style={{ background: "#161b22", borderRight: "1px solid #21262d" }}
-    >
+    <aside style={{
+      position: "fixed", top: 0, left: 0, height: "100vh", width: "220px",
+      background: "#0a0a0a", borderRight: "1px solid #1a1a1a",
+      display: "flex", flexDirection: "column", padding: "0",
+      zIndex: 40
+    }}>
+
       {/* Logo */}
-      <div className="px-3 mb-8">
-        <div className="flex items-center gap-2">
-          <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
-            style={{ background: "linear-gradient(135deg, #2d6a9f, #58a6ff)" }}
-          >
-            🚀
-          </div>
+      <div style={{ padding: "28px 20px 24px", borderBottom: "1px solid #1a1a1a" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <TrendingUp size={22} color="#58a6ff" strokeWidth={2.5} />
           <div>
-            <div className="font-bold text-sm" style={{ color: "#e6edf3" }}>JobTracker</div>
-            <div className="text-xs" style={{ color: "#8b949e" }}>by Abhinav</div>
+            <div style={{ fontSize: "15px", fontWeight: "700", color: "#ffffff", letterSpacing: "-0.3px" }}>
+              JobTracker
+            </div>
+            <div style={{ fontSize: "11px", color: "#555", marginTop: "1px" }}>
+              Abhinav Sawarn
+            </div>
           </div>
         </div>
       </div>
 
       {/* Nav */}
-      <nav className="flex flex-col gap-1 flex-1">
-        {NAV_ITEMS.map(({ to, icon, label }) => (
-          <NavLink
-            key={to}
-            to={to}
-            className={({ isActive }) =>
-              `flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                isActive ? "active-nav" : "inactive-nav"
-              }`
-            }
-            style={({ isActive }) => ({
-              background: isActive ? "rgba(45, 106, 159, 0.15)" : "transparent",
-              color: isActive ? "#58a6ff" : "#8b949e",
-              borderLeft: isActive ? "2px solid #58a6ff" : "2px solid transparent",
-            })}
-          >
-            <div className="flex items-center gap-2.5">
-              <span>{icon}</span>
-              <span>{label}</span>
-            </div>
-            {counts[to] > 0 && (
-              <span
-                className="text-xs px-1.5 py-0.5 rounded-full font-semibold"
-                style={{ background: "rgba(88, 166, 255, 0.15)", color: "#58a6ff" }}
-              >
-                {counts[to]}
-              </span>
-            )}
-          </NavLink>
-        ))}
+      <nav style={{ flex: 1, padding: "16px 12px" }}>
+        <div style={{ fontSize: "10px", fontWeight: "600", color: "#444", letterSpacing: "0.08em", padding: "0 8px", marginBottom: "8px" }}>
+          NAVIGATE
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+          {NAV_ITEMS.map(({ to, icon: Icon, label }) => (
+            <NavLink
+              key={to}
+              to={to}
+              style={({ isActive }) => ({
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                padding: "9px 10px", borderRadius: "6px", textDecoration: "none",
+                transition: "all 0.15s ease",
+                background: isActive ? "#1a1a1a" : "transparent",
+                color: isActive ? "#ffffff" : "#666",
+              })}
+              onMouseEnter={e => {
+                if (!e.currentTarget.className.includes('active')) {
+                  e.currentTarget.style.color = "#aaa"
+                  e.currentTarget.style.background = "#111"
+                }
+              }}
+              onMouseLeave={e => {
+                if (!e.currentTarget.getAttribute('aria-current')) {
+                  e.currentTarget.style.color = "#666"
+                  e.currentTarget.style.background = "transparent"
+                }
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <Icon size={16} strokeWidth={1.8} />
+                <span style={{ fontSize: "13px", fontWeight: "500" }}>{label}</span>
+              </div>
+              {counts[to] > 0 && (
+                <span style={{
+                  fontSize: "11px", fontWeight: "600",
+                  color: "#58a6ff", background: "rgba(88,166,255,0.1)",
+                  padding: "1px 7px", borderRadius: "999px"
+                }}>
+                  {counts[to]}
+                </span>
+              )}
+            </NavLink>
+          ))}
+        </div>
       </nav>
 
       {/* Bottom stats */}
-      <div className="px-3 py-3 rounded-xl mt-4" style={{ background: "#0d0f14", border: "1px solid #21262d" }}>
-        <div className="text-xs font-semibold mb-2" style={{ color: "#8b949e" }}>QUICK STATS</div>
-        <div className="space-y-1.5">
-          <div className="flex justify-between text-xs">
-            <span style={{ color: "#8b949e" }}>Active</span>
-            <span style={{ color: "#58a6ff" }} className="font-semibold">{stats.activeApplications}</span>
-          </div>
-          <div className="flex justify-between text-xs">
-            <span style={{ color: "#8b949e" }}>Pending refs</span>
-            <span style={{ color: "#d29922" }} className="font-semibold">{stats.pendingReferrals}</span>
-          </div>
-          <div className="flex justify-between text-xs">
-            <span style={{ color: "#8b949e" }}>Offers</span>
-            <span style={{ color: "#3fb950" }} className="font-semibold">{stats.offers}</span>
-          </div>
+      <div style={{ padding: "16px 12px", borderTop: "1px solid #1a1a1a" }}>
+        <div style={{ fontSize: "10px", fontWeight: "600", color: "#444", letterSpacing: "0.08em", marginBottom: "12px" }}>
+          OVERVIEW
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+          {[
+            { label: "Active",       value: stats.activeApplications, color: "#58a6ff" },
+            { label: "Pending refs", value: stats.pendingReferrals,   color: "#f5a623" },
+            { label: "Offers",       value: stats.offers,             color: "#3fb950" },
+          ].map(({ label, value, color }) => (
+            <div key={label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontSize: "12px", color: "#555" }}>{label}</span>
+              <span style={{ fontSize: "13px", fontWeight: "700", color }}>{value}</span>
+            </div>
+          ))}
         </div>
       </div>
+
     </aside>
   )
 }

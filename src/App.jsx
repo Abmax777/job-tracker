@@ -10,12 +10,12 @@ import Interviews from "./pages/Interviews"
 export default function App() {
   return (
     <AppProvider>
-      <BrowserRouter>
-        <div className="flex min-h-screen" style={{ background: "#0d0f14" }}>
+      <BrowserRouter basename="/job-tracker/">
+        <div className="flex min-h-screen" style={{ background: "#141414" }}>
           <Sidebar />
           <main style={{ marginLeft: "224px", padding: "24px", flex: 1 }}>
             <Routes>
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/" element={<Navigate to="dashboard" replace />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/applications" element={<Applications />} />
               <Route path="/referrals" element={<Referrals />} />
