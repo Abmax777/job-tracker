@@ -4,14 +4,14 @@ import StatusBadge from "../components/StatusBadge"
 import { formatDate, INTERVIEW_TYPES } from "../services/sheetsService"
 
 const S = {
-  card:    { background: "#161b22", border: "1px solid #21262d", borderRadius: "12px", padding: "20px" },
-  input:   { background: "#0d0f14", border: "1px solid #21262d", borderRadius: "8px", color: "#e6edf3", width: "100%", padding: "8px 12px", fontSize: "13px", outline: "none" },
-  select:  { background: "#0d0f14", border: "1px solid #21262d", borderRadius: "8px", color: "#e6edf3", width: "100%", padding: "8px 12px", fontSize: "13px", outline: "none" },
-  label:   { color: "#8b949e", fontSize: "12px", fontWeight: "500", display: "block", marginBottom: "4px" },
-  th:      { color: "#8b949e", fontSize: "11px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.05em", padding: "12px 16px", textAlign: "left", background: "#0d0f14", borderBottom: "1px solid #21262d" },
-  td:      { padding: "12px 16px", fontSize: "13px", color: "#e6edf3", borderBottom: "1px solid #21262d" },
-  tdMuted: { padding: "12px 16px", fontSize: "13px", color: "#8b949e", borderBottom: "1px solid #21262d" },
-  modal:   { background: "#161b22", border: "1px solid #21262d", borderRadius: "16px", width: "100%", maxWidth: "520px", maxHeight: "90vh", overflowY: "auto", padding: "24px" },
+  card:    { background: "#1a1a1a", border: "1px solid #222", borderRadius: "12px", padding: "20px" },
+  input:   { background: "#111", border: "1px solid #2a2a2a", borderRadius: "8px", color: "#e0e0e0", width: "100%", padding: "8px 12px", fontSize: "13px", outline: "none" },
+  select:  { background: "#111", border: "1px solid #2a2a2a", borderRadius: "8px", color: "#e0e0e0", width: "100%", padding: "8px 12px", fontSize: "13px", outline: "none" },
+  label:   { color: "#555", fontSize: "12px", fontWeight: "500", display: "block", marginBottom: "4px" },
+  th:      { color: "#444", fontSize: "11px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.06em", padding: "12px 16px", textAlign: "left", background: "#111", borderBottom: "1px solid #1e1e1e" },
+  td:      { padding: "12px 16px", fontSize: "13px", color: "#e0e0e0", borderBottom: "1px solid #1a1a1a" },
+  tdMuted: { padding: "12px 16px", fontSize: "13px", color: "#555", borderBottom: "1px solid #1a1a1a" },
+  modal:   { background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: "16px", width: "100%", maxWidth: "520px", maxHeight: "90vh", overflowY: "auto", padding: "24px" },
 }
 
 const OUTCOMES = ["Pending", "Passed", "Failed", "Cancelled", "Rescheduled"]
@@ -74,7 +74,7 @@ export default function Interviews() {
 
   if (loading) return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "200px" }}>
-      <span style={{ color: "#8b949e", fontSize: "13px" }}>Loading...</span>
+      <span style={{ color: "#555", fontSize: "13px" }}>Loading...</span>
     </div>
   )
 
@@ -82,17 +82,17 @@ export default function Interviews() {
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
 
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <div style={{ paddingBottom: "20px", borderBottom: "1px solid #1e1e1e", display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
         <div>
-          <h1 style={{ fontSize: "22px", fontWeight: "700", color: "#e6edf3", margin: 0 }}>Interviews</h1>
-          <p style={{ color: "#8b949e", fontSize: "13px", marginTop: "4px" }}>
+          <h1 style={{ fontSize: "30px", fontWeight: "800", color: "#ffffff", margin: 0, letterSpacing: "-0.5px" }}>Interviews</h1>
+          <p style={{ color: "#555", fontSize: "13px", marginTop: "6px" }}>
             {interviews.length} total · {upcoming.length} upcoming
           </p>
         </div>
         <button onClick={openAdd} style={{
-          background: "#2d6a9f", color: "#fff", padding: "8px 16px",
-          borderRadius: "8px", fontSize: "13px", fontWeight: "600",
-          cursor: "pointer", border: "none"
+          background: "#58a6ff", color: "#000", padding: "9px 18px",
+          borderRadius: "8px", fontSize: "13px", fontWeight: "700",
+          cursor: "pointer", border: "none", marginTop: "4px"
         }}>
           + Log Interview
         </button>
@@ -100,20 +100,22 @@ export default function Interviews() {
 
       {/* Upcoming banner */}
       {upcoming.length > 0 && (
-        <div style={{ background: "rgba(63,185,80,0.08)", border: "1px solid rgba(63,185,80,0.25)", borderRadius: "12px", padding: "16px" }}>
-          <p style={{ color: "#3fb950", fontWeight: "600", fontSize: "13px", marginBottom: "10px" }}>📅 Upcoming Interviews</p>
+        <div style={{ background: "rgba(63,185,80,0.06)", border: "1px solid rgba(63,185,80,0.2)", borderRadius: "12px", padding: "16px" }}>
+          <p style={{ color: "#3fb950", fontWeight: "600", fontSize: "12px", letterSpacing: "0.06em", marginBottom: "12px" }}>
+            UPCOMING INTERVIEWS
+          </p>
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
             {upcoming.map((interview, i) => {
               const daysUntil = Math.ceil((new Date(interview.Date) - new Date()) / (1000 * 60 * 60 * 24))
               return (
-                <div key={i} style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: "8px", padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div key={i} style={{ background: "#1a1a1a", border: "1px solid #222", borderRadius: "8px", padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div>
-                    <p style={{ color: "#e6edf3", fontWeight: "600", fontSize: "13px", margin: 0 }}>{interview.Company}</p>
-                    <p style={{ color: "#8b949e", fontSize: "12px", marginTop: "2px" }}>Round {interview.Round} · {interview.Type}</p>
+                    <p style={{ color: "#e0e0e0", fontWeight: "600", fontSize: "13px", margin: 0 }}>{interview.Company}</p>
+                    <p style={{ color: "#555", fontSize: "11px", marginTop: "2px" }}>Round {interview.Round} · {interview.Type}</p>
                   </div>
                   <div style={{ textAlign: "right" }}>
                     <p style={{ color: "#3fb950", fontSize: "13px", fontWeight: "600", margin: 0 }}>{formatDate(interview.Date)}</p>
-                    <p style={{ color: "#8b949e", fontSize: "11px", marginTop: "2px" }}>
+                    <p style={{ color: "#555", fontSize: "11px", marginTop: "2px" }}>
                       {daysUntil === 0 ? "Today!" : daysUntil === 1 ? "Tomorrow" : `In ${daysUntil} days`}
                     </p>
                   </div>
@@ -127,15 +129,14 @@ export default function Interviews() {
       {/* Stats */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px" }}>
         {[
-          { label: "Total",    value: interviews.length,                                       color: "#e6edf3", icon: "📋" },
-          { label: "Upcoming", value: upcoming.length,                                         color: "#58a6ff", icon: "📅" },
-          { label: "Passed",   value: interviews.filter(i => i.Outcome === "Passed").length,   color: "#3fb950", icon: "✅" },
-          { label: "Failed",   value: interviews.filter(i => i.Outcome === "Failed").length,   color: "#f85149", icon: "❌" },
-        ].map(({ label, value, color, icon }) => (
-          <div key={label} style={{ ...S.card }}>
-            <div style={{ fontSize: "20px", marginBottom: "8px" }}>{icon}</div>
-            <div style={{ fontSize: "28px", fontWeight: "700", color, marginBottom: "4px" }}>{value}</div>
-            <div style={{ fontSize: "12px", color: "#8b949e" }}>{label}</div>
+          { label: "Total",    value: interviews.length,                                     color: "#e0e0e0" },
+          { label: "Upcoming", value: upcoming.length,                                       color: "#58a6ff" },
+          { label: "Passed",   value: interviews.filter(i => i.Outcome === "Passed").length, color: "#3fb950" },
+          { label: "Failed",   value: interviews.filter(i => i.Outcome === "Failed").length, color: "#f85149" },
+        ].map(({ label, value, color }) => (
+          <div key={label} style={{ ...S.card, padding: "18px 20px" }}>
+            <div style={{ fontSize: "28px", fontWeight: "800", color, letterSpacing: "-0.5px" }}>{value}</div>
+            <div style={{ fontSize: "12px", color: "#555", marginTop: "4px" }}>{label}</div>
           </div>
         ))}
       </div>
@@ -149,12 +150,12 @@ export default function Interviews() {
       </div>
 
       {/* Table */}
-      <div style={{ ...S.card, padding: 0, overflow: "hidden" }}>
+      <div style={{ background: "#1a1a1a", border: "1px solid #222", borderRadius: "12px", overflow: "hidden" }}>
         {filtered.length === 0 ? (
           <div style={{ textAlign: "center", padding: "60px 20px" }}>
-            <div style={{ fontSize: "36px", marginBottom: "12px" }}>🎯</div>
-            <p style={{ color: "#e6edf3", fontWeight: "500", fontSize: "14px" }}>No interviews logged yet</p>
-            <p style={{ color: "#8b949e", fontSize: "13px", marginTop: "4px" }}>They'll come — keep applying!</p>
+            <div style={{ fontSize: "32px", marginBottom: "12px" }}>🎯</div>
+            <p style={{ color: "#e0e0e0", fontWeight: "600", fontSize: "14px" }}>No interviews logged yet</p>
+            <p style={{ color: "#555", fontSize: "13px", marginTop: "4px" }}>They'll come — keep applying!</p>
           </div>
         ) : (
           <div style={{ overflowX: "auto" }}>
@@ -170,7 +171,7 @@ export default function Interviews() {
                 {filtered.map((interview, i) => (
                   <tr key={i}
                     style={{ transition: "background 0.15s" }}
-                    onMouseEnter={e => e.currentTarget.style.background = "#1c2128"}
+                    onMouseEnter={e => e.currentTarget.style.background = "#1e1e1e"}
                     onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                   >
                     <td style={{ ...S.td, fontWeight: "600" }}>{interview.Company}</td>
@@ -181,9 +182,11 @@ export default function Interviews() {
                     <td style={{ ...S.tdMuted, maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {interview.Notes || "--"}
                     </td>
-                    <td style={{ ...S.td, display: "flex", gap: "8px" }}>
-                      <button onClick={() => openEdit(interview)} style={{ background: "none", border: "none", color: "#58a6ff", fontSize: "12px", cursor: "pointer", fontWeight: "500" }}>Edit</button>
-                      <button onClick={() => handleDelete(interview)} style={{ background: "none", border: "none", color: "#f85149", fontSize: "12px", cursor: "pointer", fontWeight: "500" }}>Delete</button>
+                    <td style={S.td}>
+                      <div style={{ display: "flex", gap: "12px" }}>
+                        <button onClick={() => openEdit(interview)} style={{ background: "none", border: "none", color: "#58a6ff", fontSize: "12px", cursor: "pointer", fontWeight: "600" }}>Edit</button>
+                        <button onClick={() => handleDelete(interview)} style={{ background: "none", border: "none", color: "#f85149", fontSize: "12px", cursor: "pointer", fontWeight: "600" }}>Delete</button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -195,13 +198,13 @@ export default function Interviews() {
 
       {/* Modal */}
       {showForm && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: "16px" }}>
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: "16px" }}>
           <div style={S.modal}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-              <h2 style={{ color: "#e6edf3", fontSize: "16px", fontWeight: "700", margin: 0 }}>
+              <h2 style={{ color: "#fff", fontSize: "16px", fontWeight: "700", margin: 0 }}>
                 {editing ? "Edit Interview" : "Log Interview"}
               </h2>
-              <button onClick={closeForm} style={{ background: "none", border: "none", color: "#8b949e", fontSize: "18px", cursor: "pointer" }}>✕</button>
+              <button onClick={closeForm} style={{ background: "none", border: "none", color: "#555", fontSize: "20px", cursor: "pointer", lineHeight: 1 }}>✕</button>
             </div>
 
             <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
@@ -251,10 +254,10 @@ export default function Interviews() {
               </div>
 
               <div style={{ display: "flex", gap: "10px", marginTop: "4px" }}>
-                <button type="button" onClick={closeForm} style={{ flex: 1, background: "transparent", border: "1px solid #21262d", color: "#8b949e", padding: "9px", borderRadius: "8px", fontSize: "13px", cursor: "pointer" }}>
+                <button type="button" onClick={closeForm} style={{ flex: 1, background: "transparent", border: "1px solid #2a2a2a", color: "#666", padding: "9px", borderRadius: "8px", fontSize: "13px", cursor: "pointer" }}>
                   Cancel
                 </button>
-                <button type="submit" disabled={saving} style={{ flex: 1, background: "#2d6a9f", color: "#fff", padding: "9px", borderRadius: "8px", fontSize: "13px", fontWeight: "600", cursor: "pointer", border: "none", opacity: saving ? 0.6 : 1 }}>
+                <button type="submit" disabled={saving} style={{ flex: 1, background: "#58a6ff", color: "#000", padding: "9px", borderRadius: "8px", fontSize: "13px", fontWeight: "700", cursor: "pointer", border: "none", opacity: saving ? 0.6 : 1 }}>
                   {saving ? "Saving..." : editing ? "Update" : "Log"}
                 </button>
               </div>

@@ -4,14 +4,14 @@ import StatusBadge from "../components/StatusBadge"
 import { formatDate, APPLICATION_STATUSES, SOURCES, CV_TYPES } from "../services/sheetsService"
 
 const S = {
-  card:    { background: "#161b22", border: "1px solid #21262d", borderRadius: "12px", padding: "20px" },
-  input:   { background: "#0d0f14", border: "1px solid #21262d", borderRadius: "8px", color: "#e6edf3", width: "100%", padding: "8px 12px", fontSize: "13px", outline: "none" },
-  select:  { background: "#0d0f14", border: "1px solid #21262d", borderRadius: "8px", color: "#e6edf3", width: "100%", padding: "8px 12px", fontSize: "13px", outline: "none" },
-  label:   { color: "#8b949e", fontSize: "12px", fontWeight: "500", display: "block", marginBottom: "4px" },
-  th:      { color: "#8b949e", fontSize: "11px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.05em", padding: "12px 16px", textAlign: "left", background: "#0d0f14", borderBottom: "1px solid #21262d" },
-  td:      { padding: "12px 16px", fontSize: "13px", color: "#e6edf3", borderBottom: "1px solid #21262d" },
-  tdMuted: { padding: "12px 16px", fontSize: "13px", color: "#8b949e", borderBottom: "1px solid #21262d" },
-  modal:   { background: "#161b22", border: "1px solid #21262d", borderRadius: "16px", width: "100%", maxWidth: "520px", maxHeight: "90vh", overflowY: "auto", padding: "24px" },
+  card:    { background: "#1a1a1a", border: "1px solid #222", borderRadius: "12px", padding: "20px" },
+  input:   { background: "#111", border: "1px solid #2a2a2a", borderRadius: "8px", color: "#e0e0e0", width: "100%", padding: "8px 12px", fontSize: "13px", outline: "none" },
+  select:  { background: "#111", border: "1px solid #2a2a2a", borderRadius: "8px", color: "#e0e0e0", width: "100%", padding: "8px 12px", fontSize: "13px", outline: "none" },
+  label:   { color: "#555", fontSize: "12px", fontWeight: "500", display: "block", marginBottom: "4px" },
+  th:      { color: "#444", fontSize: "11px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.06em", padding: "12px 16px", textAlign: "left", background: "#111", borderBottom: "1px solid #1e1e1e" },
+  td:      { padding: "12px 16px", fontSize: "13px", color: "#e0e0e0", borderBottom: "1px solid #1a1a1a" },
+  tdMuted: { padding: "12px 16px", fontSize: "13px", color: "#555", borderBottom: "1px solid #1a1a1a" },
+  modal:   { background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: "16px", width: "100%", maxWidth: "520px", maxHeight: "90vh", overflowY: "auto", padding: "24px" },
 }
 
 const EMPTY_FORM = {
@@ -72,7 +72,7 @@ export default function Applications() {
 
   if (loading) return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "200px" }}>
-      <span style={{ color: "#8b949e", fontSize: "13px" }}>Loading...</span>
+      <span style={{ color: "#555", fontSize: "13px" }}>Loading...</span>
     </div>
   )
 
@@ -80,17 +80,17 @@ export default function Applications() {
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
 
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <div style={{ paddingBottom: "20px", borderBottom: "1px solid #1e1e1e", display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
         <div>
-          <h1 style={{ fontSize: "22px", fontWeight: "700", color: "#e6edf3", margin: 0 }}>Applications</h1>
-          <p style={{ color: "#8b949e", fontSize: "13px", marginTop: "4px" }}>
+          <h1 style={{ fontSize: "30px", fontWeight: "800", color: "#ffffff", margin: 0, letterSpacing: "-0.5px" }}>Applications</h1>
+          <p style={{ color: "#555", fontSize: "13px", marginTop: "6px" }}>
             {filtered.length} of {applications.length} shown
           </p>
         </div>
         <button onClick={openAdd} style={{
-          background: "#2d6a9f", color: "#fff", padding: "8px 16px",
-          borderRadius: "8px", fontSize: "13px", fontWeight: "600",
-          cursor: "pointer", border: "none"
+          background: "#58a6ff", color: "#000", padding: "9px 18px",
+          borderRadius: "8px", fontSize: "13px", fontWeight: "700",
+          cursor: "pointer", border: "none", marginTop: "4px"
         }}>
           + Add Application
         </button>
@@ -109,12 +109,12 @@ export default function Applications() {
       </div>
 
       {/* Table */}
-      <div style={{ ...S.card, padding: 0, overflow: "hidden" }}>
+      <div style={{ background: "#1a1a1a", border: "1px solid #222", borderRadius: "12px", overflow: "hidden" }}>
         {filtered.length === 0 ? (
           <div style={{ textAlign: "center", padding: "60px 20px" }}>
-            <div style={{ fontSize: "36px", marginBottom: "12px" }}>📋</div>
-            <p style={{ color: "#e6edf3", fontWeight: "500", fontSize: "14px" }}>No applications yet</p>
-            <p style={{ color: "#8b949e", fontSize: "13px", marginTop: "4px" }}>Click "Add Application" to get started</p>
+            <div style={{ fontSize: "32px", marginBottom: "12px" }}>📋</div>
+            <p style={{ color: "#e0e0e0", fontWeight: "600", fontSize: "14px" }}>No applications yet</p>
+            <p style={{ color: "#555", fontSize: "13px", marginTop: "4px" }}>Click "Add Application" to get started</p>
           </div>
         ) : (
           <div style={{ overflowX: "auto" }}>
@@ -128,9 +128,10 @@ export default function Applications() {
               </thead>
               <tbody>
                 {filtered.map((app, i) => (
-                  <tr key={i} style={{ transition: "background 0.15s" }}
-                    onMouseEnter={e => e.currentTarget.style.background = "#1c2128"}
+                  <tr key={i}
+                    onMouseEnter={e => e.currentTarget.style.background = "#1e1e1e"}
                     onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                    style={{ transition: "background 0.15s" }}
                   >
                     <td style={{ ...S.td, fontWeight: "600" }}>{app.Company}</td>
                     <td style={S.tdMuted}>{app.Role}</td>
@@ -139,9 +140,11 @@ export default function Applications() {
                     <td style={S.td}><StatusBadge status={app.Status} /></td>
                     <td style={S.tdMuted}>{app["CV Used"]}</td>
                     <td style={S.tdMuted}>{app["Salary Expected"] || "--"}</td>
-                    <td style={{ ...S.td, display: "flex", gap: "8px" }}>
-                      <button onClick={() => openEdit(app)} style={{ background: "none", border: "none", color: "#58a6ff", fontSize: "12px", cursor: "pointer", fontWeight: "500" }}>Edit</button>
-                      <button onClick={() => handleDelete(app)} style={{ background: "none", border: "none", color: "#f85149", fontSize: "12px", cursor: "pointer", fontWeight: "500" }}>Delete</button>
+                    <td style={{ ...S.td }}>
+                      <div style={{ display: "flex", gap: "12px" }}>
+                        <button onClick={() => openEdit(app)} style={{ background: "none", border: "none", color: "#58a6ff", fontSize: "12px", cursor: "pointer", fontWeight: "600" }}>Edit</button>
+                        <button onClick={() => handleDelete(app)} style={{ background: "none", border: "none", color: "#f85149", fontSize: "12px", cursor: "pointer", fontWeight: "600" }}>Delete</button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -153,13 +156,13 @@ export default function Applications() {
 
       {/* Modal */}
       {showForm && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: "16px" }}>
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: "16px" }}>
           <div style={S.modal}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-              <h2 style={{ color: "#e6edf3", fontSize: "16px", fontWeight: "700", margin: 0 }}>
+              <h2 style={{ color: "#fff", fontSize: "16px", fontWeight: "700", margin: 0 }}>
                 {editing ? "Edit Application" : "Add Application"}
               </h2>
-              <button onClick={closeForm} style={{ background: "none", border: "none", color: "#8b949e", fontSize: "18px", cursor: "pointer" }}>✕</button>
+              <button onClick={closeForm} style={{ background: "none", border: "none", color: "#555", fontSize: "20px", cursor: "pointer", lineHeight: 1 }}>✕</button>
             </div>
 
             <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
@@ -213,10 +216,10 @@ export default function Applications() {
               </div>
 
               <div style={{ display: "flex", gap: "10px", marginTop: "4px" }}>
-                <button type="button" onClick={closeForm} style={{ flex: 1, background: "transparent", border: "1px solid #21262d", color: "#8b949e", padding: "9px", borderRadius: "8px", fontSize: "13px", cursor: "pointer" }}>
+                <button type="button" onClick={closeForm} style={{ flex: 1, background: "transparent", border: "1px solid #2a2a2a", color: "#666", padding: "9px", borderRadius: "8px", fontSize: "13px", cursor: "pointer" }}>
                   Cancel
                 </button>
-                <button type="submit" disabled={saving} style={{ flex: 1, background: "#2d6a9f", color: "#fff", padding: "9px", borderRadius: "8px", fontSize: "13px", fontWeight: "600", cursor: "pointer", border: "none", opacity: saving ? 0.6 : 1 }}>
+                <button type="submit" disabled={saving} style={{ flex: 1, background: "#58a6ff", color: "#000", padding: "9px", borderRadius: "8px", fontSize: "13px", fontWeight: "700", cursor: "pointer", border: "none", opacity: saving ? 0.6 : 1 }}>
                   {saving ? "Saving..." : editing ? "Update" : "Add"}
                 </button>
               </div>
