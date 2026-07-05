@@ -28,13 +28,34 @@ export default function Applications() {
   const [editing, setEditing] = useState(null)
   const [filterStatus, setFilterStatus] = useState("All")
   const [filterSource, setFilterSource] = useState("All")
+  const [search, setSearch] = useState("")
+  const [sortBy, setSortBy] = useState("date-desc")
   const [saving, setSaving] = useState(false)
 
   const filtered = applications.filter(app => {
-    const statusMatch = filterStatus === "All" || app.Status === filterStatus
-    const sourceMatch = filterSource === "All" || app.Source === filterSource
-    return statusMatch && sourceMatch
-  })
+  const statusMatch = filterStatus === "All" || app.Status === filterStatus
+  const sourceMatch = filterSource === "All" || app.Source === filterSource
+  const q = search.trim().toLowerCase()
+  const searchMatch = !q ||
+    (app.Company || "").toLowerCase().includes(q) ||
+    (app.Role || "").toLowerCase().includes(q)
+  return statusMatch && sourceMatch && searchMatch
+})
+
+const dateVal = app => {
+  const d = new Date(app["Date Applied"])
+  return isNaN(d) ? 0 : d.getTime()
+}
+
+const sorted = [...filtered].sort((a, b) => {
+  switch (sortBy) {
+    case "date-asc":   return dateVal(a) - dateVal(b)
+    case "company-az": return (a.Company || "").localeCompare(b.Company || "")
+    case "company-za": return (b.Company || "").localeCompare(a.Company || "")
+    case "status":     return (a.Status || "").localeCompare(b.Status || "")
+    default:           return dateVal(b) - dateVal(a)  // newest first
+  }
+})
 
   function openAdd() { setForm(EMPTY_FORM); setEditing(null); setShowForm(true) }
 
@@ -108,6 +129,37 @@ export default function Applications() {
         </select>
       </div>
 
+      <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "center", marginBottom: "16px" }}>
+  <input
+    style={{ ...S.input, maxWidth: "260px" }}
+    placeholder="Search company or role…"
+    value={search}
+    onChange={e => setSearch(e.target.value)}
+  />
+  <select
+    style={{ ...S.select, maxWidth: "190px" }}
+    value={sortBy}
+    onChange={e => setSortBy(e.target.value)}
+  >
+    <option value="date-desc">Newest first</option>
+    <option value="date-asc">Oldest first</option>
+    <option value="company-az">Company A–Z</option>
+    <option value="company-za">Company Z–A</option>
+    <option value="status">Status</option>
+  </select>
+  {(search || filterStatus !== "All" || filterSource !== "All") && (
+    <button
+      onClick={() => { setSearch(""); setFilterStatus("All"); setFilterSource("All") }}
+      style={{ background: "transparent", border: "1px solid #21262d", color: "#8b949e", borderRadius: "8px", padding: "8px 12px", fontSize: "13px", cursor: "pointer" }}
+    >
+      Clear
+    </button>
+  )}
+  <span style={{ color: "#8b949e", fontSize: "12px", marginLeft: "auto" }}>
+    {sorted.length} of {applications.length}
+  </span>
+</div>
+
       {/* Table */}
       <div style={{ background: "#1a1a1a", border: "1px solid #222", borderRadius: "12px", overflow: "hidden" }}>
         {filtered.length === 0 ? (
@@ -127,7 +179,7 @@ export default function Applications() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((app, i) => (
+                {sorted.map((app, i) => (
                   <tr key={i}
                     onMouseEnter={e => e.currentTarget.style.background = "#1e1e1e"}
                     onMouseLeave={e => e.currentTarget.style.background = "transparent"}
