@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useApp } from "../context/AppContext"
 import StatusBadge from "../components/StatusBadge"
 import { formatDate, INTERVIEW_TYPES } from "../services/sheetsService"
@@ -19,6 +19,7 @@ const OUTCOMES = ["Pending", "Passed", "Failed", "Cancelled", "Rescheduled"]
 const EMPTY_FORM = {
   company: "", round: "1", type: "Technical Round",
   date: new Date().toISOString().split("T")[0],
+  time: "", meetingLink: "",
   outcome: "Pending", notes: ""
 }
 
@@ -28,17 +29,37 @@ export default function Interviews() {
   const [form, setForm] = useState(EMPTY_FORM)
   const [editing, setEditing] = useState(null)
   const [filterOutcome, setFilterOutcome] = useState("All")
+  const [search, setSearch] = useState("")
+  const [sortBy, setSortBy] = useState("date-desc")
   const [saving, setSaving] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(null)
 
   const companies = [...new Set(applications.map(a => a.Company))].sort()
 
-  const filtered = interviews.filter(i =>
-    filterOutcome === "All" || i.Outcome === filterOutcome
-  )
+  const filtered = interviews.filter(i => {
+    const outcomeMatch = filterOutcome === "All" || i.Outcome === filterOutcome
+    const q = search.trim().toLowerCase()
+    const searchMatch = !q || (i.Company || "").toLowerCase().includes(q) || (i.Type || "").toLowerCase().includes(q)
+    return outcomeMatch && searchMatch
+  })
+
+  const dateVal = i => { const d = new Date(i.Date); return isNaN(d) ? 0 : d.getTime() }
+  const sorted = [...filtered].sort((a, b) => {
+    if (sortBy === "date-asc") return dateVal(a) - dateVal(b)
+    if (sortBy === "company-az") return (a.Company || "").localeCompare(b.Company || "")
+    return dateVal(b) - dateVal(a)
+  })
 
   const upcoming = interviews
     .filter(i => new Date(i.Date) >= new Date() && i.Outcome === "Pending")
     .sort((a, b) => new Date(a.Date) - new Date(b.Date))
+
+  useEffect(() => {
+    if (!showForm) return
+    const handler = e => { if (e.key === "Escape") closeForm() }
+    window.addEventListener("keydown", handler)
+    return () => window.removeEventListener("keydown", handler)
+  }, [showForm])
 
   function openAdd() { setForm(EMPTY_FORM); setEditing(null); setShowForm(true) }
 
@@ -46,6 +67,7 @@ export default function Interviews() {
     setForm({
       company: interview.Company, round: interview.Round,
       type: interview.Type, date: interview.Date,
+      time: interview.Time || "", meetingLink: interview["Meeting Link"] || "",
       outcome: interview.Outcome, notes: interview.Notes
     })
     setEditing(interview); setShowForm(true)
@@ -58,7 +80,8 @@ export default function Interviews() {
     if (editing) {
       await updateInterview(editing._rowIndex, {
         ID: editing.ID, Company: form.company, Round: form.round,
-        Type: form.type, Date: form.date, Outcome: form.outcome, Notes: form.notes
+        Type: form.type, Date: form.date, Outcome: form.outcome, Notes: form.notes,
+        Time: form.time, "Meeting Link": form.meetingLink
       })
     } else {
       await addInterview(form)
@@ -67,9 +90,8 @@ export default function Interviews() {
   }
 
   async function handleDelete(interview) {
-    if (confirm(`Delete interview for ${interview.Company}?`)) {
-      await deleteInterview(interview._rowIndex)
-    }
+    await deleteInterview(interview._rowIndex)
+    setConfirmDelete(null)
   }
 
   if (loading) return (
@@ -114,10 +136,21 @@ export default function Interviews() {
                     <p style={{ color: "#555", fontSize: "11px", marginTop: "2px" }}>Round {interview.Round} · {interview.Type}</p>
                   </div>
                   <div style={{ textAlign: "right" }}>
-                    <p style={{ color: "#3fb950", fontSize: "13px", fontWeight: "600", margin: 0 }}>{formatDate(interview.Date)}</p>
-                    <p style={{ color: "#555", fontSize: "11px", marginTop: "2px" }}>
-                      {daysUntil === 0 ? "Today!" : daysUntil === 1 ? "Tomorrow" : `In ${daysUntil} days`}
+                    <p style={{ color: "#3fb950", fontSize: "13px", fontWeight: "600", margin: 0 }}>
+                      {formatDate(interview.Date)}{interview.Time ? ` · ${interview.Time}` : ""}
                     </p>
+                    <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end", marginTop: "4px" }}>
+                      <span style={{ color: "#555", fontSize: "11px" }}>
+                        {daysUntil === 0 ? "Today!" : daysUntil === 1 ? "Tomorrow" : `In ${daysUntil} days`}
+                      </span>
+                      {interview["Meeting Link"] && (
+                        <a href={interview["Meeting Link"]} target="_blank" rel="noopener noreferrer"
+                          onClick={e => e.stopPropagation()}
+                          style={{ color: "#58a6ff", fontSize: "11px", fontWeight: "600", textDecoration: "none" }}>
+                          Join ↗
+                        </a>
+                      )}
+                    </div>
                   </div>
                 </div>
               )
@@ -141,17 +174,27 @@ export default function Interviews() {
         ))}
       </div>
 
-      {/* Filter */}
-      <div>
+      {/* Filters */}
+      <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "center" }}>
+        <input style={{ ...S.input, maxWidth: "220px" }} placeholder="Search company or type…" value={search} onChange={e => setSearch(e.target.value)} />
         <select value={filterOutcome} onChange={e => setFilterOutcome(e.target.value)} style={{ ...S.select, width: "auto" }}>
           <option value="All">All Outcomes</option>
           {OUTCOMES.map(o => <option key={o}>{o}</option>)}
         </select>
+        <select value={sortBy} onChange={e => setSortBy(e.target.value)} style={{ ...S.select, width: "auto" }}>
+          <option value="date-desc">Newest first</option>
+          <option value="date-asc">Oldest first</option>
+          <option value="company-az">Company A–Z</option>
+        </select>
+        {(search || filterOutcome !== "All") && (
+          <button onClick={() => { setSearch(""); setFilterOutcome("All") }} style={{ background: "transparent", border: "1px solid #21262d", color: "#8b949e", borderRadius: "8px", padding: "8px 12px", fontSize: "13px", cursor: "pointer" }}>Clear</button>
+        )}
+        <span style={{ color: "#8b949e", fontSize: "12px", marginLeft: "auto" }}>{sorted.length} of {interviews.length}</span>
       </div>
 
       {/* Table */}
       <div style={{ background: "#1a1a1a", border: "1px solid #222", borderRadius: "12px", overflow: "hidden" }}>
-        {filtered.length === 0 ? (
+        {sorted.length === 0 ? (
           <div style={{ textAlign: "center", padding: "60px 20px" }}>
             <div style={{ fontSize: "32px", marginBottom: "12px" }}>🎯</div>
             <p style={{ color: "#e0e0e0", fontWeight: "600", fontSize: "14px" }}>No interviews logged yet</p>
@@ -162,31 +205,47 @@ export default function Interviews() {
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr>
-                  {["Company", "Round", "Type", "Date", "Outcome", "Notes", "Actions"].map(h => (
+                  {["Company", "Round", "Type", "Date & Time", "Outcome", "Link", "Actions"].map(h => (
                     <th key={h} style={S.th}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((interview, i) => (
+                {sorted.map((interview, i) => (
                   <tr key={i}
-                    style={{ transition: "background 0.15s" }}
+                    onClick={() => openEdit(interview)}
+                    style={{ transition: "background 0.15s", cursor: "pointer" }}
                     onMouseEnter={e => e.currentTarget.style.background = "#1e1e1e"}
                     onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                   >
                     <td style={{ ...S.td, fontWeight: "600" }}>{interview.Company}</td>
                     <td style={S.tdMuted}>Round {interview.Round}</td>
                     <td style={S.tdMuted}>{interview.Type}</td>
-                    <td style={S.tdMuted}>{formatDate(interview.Date)}</td>
-                    <td style={S.td}><StatusBadge status={interview.Outcome} /></td>
-                    <td style={{ ...S.tdMuted, maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {interview.Notes || "--"}
+                    <td style={S.tdMuted}>
+                      <div>{formatDate(interview.Date)}</div>
+                      {interview.Time && <div style={{ fontSize: "11px", color: "#444", marginTop: "2px" }}>{interview.Time}</div>}
                     </td>
-                    <td style={S.td}>
-                      <div style={{ display: "flex", gap: "12px" }}>
-                        <button onClick={() => openEdit(interview)} style={{ background: "none", border: "none", color: "#58a6ff", fontSize: "12px", cursor: "pointer", fontWeight: "600" }}>Edit</button>
-                        <button onClick={() => handleDelete(interview)} style={{ background: "none", border: "none", color: "#f85149", fontSize: "12px", cursor: "pointer", fontWeight: "600" }}>Delete</button>
-                      </div>
+                    <td style={S.td}><StatusBadge status={interview.Outcome} /></td>
+                    <td style={S.td} onClick={e => e.stopPropagation()}>
+                      {interview["Meeting Link"]
+                        ? <a href={interview["Meeting Link"]} target="_blank" rel="noopener noreferrer"
+                            style={{ color: "#58a6ff", fontSize: "12px", fontWeight: "600", textDecoration: "none" }}>Join ↗</a>
+                        : <span style={{ color: "#333", fontSize: "12px" }}>--</span>
+                      }
+                    </td>
+                    <td style={S.td} onClick={e => e.stopPropagation()}>
+                      {confirmDelete === interview._rowIndex ? (
+                        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                          <span style={{ fontSize: "11px", color: "#888" }}>Sure?</span>
+                          <button onClick={() => handleDelete(interview)} style={{ background: "none", border: "none", color: "#f85149", fontSize: "12px", cursor: "pointer", fontWeight: "700" }}>Yes</button>
+                          <button onClick={() => setConfirmDelete(null)} style={{ background: "none", border: "none", color: "#555", fontSize: "12px", cursor: "pointer" }}>No</button>
+                        </div>
+                      ) : (
+                        <div style={{ display: "flex", gap: "12px" }}>
+                          <button onClick={() => openEdit(interview)} style={{ background: "none", border: "none", color: "#58a6ff", fontSize: "12px", cursor: "pointer", fontWeight: "600" }}>Edit</button>
+                          <button onClick={() => setConfirmDelete(interview._rowIndex)} style={{ background: "none", border: "none", color: "#f85149", fontSize: "12px", cursor: "pointer", fontWeight: "600" }}>Delete</button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -241,10 +300,21 @@ export default function Interviews() {
                   <input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} style={S.input} />
                 </div>
                 <div>
+                  <label style={S.label}>Time</label>
+                  <input type="time" value={form.time} onChange={e => setForm({ ...form, time: e.target.value })} style={S.input} />
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                <div>
                   <label style={S.label}>Outcome</label>
                   <select value={form.outcome} onChange={e => setForm({ ...form, outcome: e.target.value })} style={S.select}>
                     {OUTCOMES.map(o => <option key={o}>{o}</option>)}
                   </select>
+                </div>
+                <div>
+                  <label style={S.label}>Meeting Link</label>
+                  <input value={form.meetingLink} onChange={e => setForm({ ...form, meetingLink: e.target.value })} style={S.input} placeholder="https://meet.google.com/..." />
                 </div>
               </div>
 

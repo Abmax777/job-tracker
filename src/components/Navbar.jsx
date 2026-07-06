@@ -1,8 +1,9 @@
 import { NavLink } from "react-router-dom"
 import { useApp } from "../context/AppContext"
 import {
-  LayoutDashboard, FileText, Users, Calendar, TrendingUp
+  LayoutDashboard, FileText, Users, Calendar, TrendingUp, RefreshCw
 } from "lucide-react"
+import { useState } from "react"
 
 const NAV_ITEMS = [
   { to: "/dashboard",    icon: LayoutDashboard, label: "Dashboard"    },
@@ -12,7 +13,14 @@ const NAV_ITEMS = [
 ]
 
 export default function Sidebar() {
-  const { stats } = useApp()
+  const { stats, loadAllData } = useApp()
+  const [refreshing, setRefreshing] = useState(false)
+
+  async function handleRefresh() {
+    setRefreshing(true)
+    await loadAllData()
+    setRefreshing(false)
+  }
 
   const counts = {
     "/applications": stats.totalApplications,
@@ -93,8 +101,20 @@ export default function Sidebar() {
 
       {/* Bottom stats */}
       <div style={{ padding: "16px 12px", borderTop: "1px solid #1a1a1a" }}>
-        <div style={{ fontSize: "10px", fontWeight: "600", color: "#444", letterSpacing: "0.08em", marginBottom: "12px" }}>
-          OVERVIEW
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+          <div style={{ fontSize: "10px", fontWeight: "600", color: "#444", letterSpacing: "0.08em" }}>
+            OVERVIEW
+          </div>
+          <button
+            onClick={handleRefresh}
+            disabled={refreshing}
+            title="Refresh data"
+            style={{ background: "none", border: "none", cursor: "pointer", padding: "2px", color: "#444", display: "flex", alignItems: "center" }}
+            onMouseEnter={e => e.currentTarget.style.color = "#888"}
+            onMouseLeave={e => e.currentTarget.style.color = "#444"}
+          >
+            <RefreshCw size={13} strokeWidth={2} style={{ transition: "transform 0.6s", transform: refreshing ? "rotate(360deg)" : "none" }} />
+          </button>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
           {[

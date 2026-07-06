@@ -173,7 +173,9 @@ export function AppProvider({ children }) {
       data.type,
       data.date,
       data.outcome || "Pending",
-      data.notes || ""
+      data.notes || "",
+      data.time || "",
+      data.meetingLink || ""
     ]
     const success = await appendRow(SHEETS.INTERVIEWS, row)
     if (success) {
@@ -193,7 +195,9 @@ export function AppProvider({ children }) {
       data.Type,
       data.Date,
       data.Outcome,
-      data.Notes
+      data.Notes,
+      data.Time || "",
+      data["Meeting Link"] || ""
     ]
     const success = await updateRow(SHEETS.INTERVIEWS, rowIndex, row)
     if (success) {

@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useApp } from "../context/AppContext"
 import StatusBadge from "../components/StatusBadge"
 import { formatDate, REFERRAL_RESPONSES, SOURCES } from "../services/sheetsService"
@@ -26,15 +26,35 @@ export default function Referrals() {
   const [form, setForm] = useState(EMPTY_FORM)
   const [editing, setEditing] = useState(null)
   const [filterResponse, setFilterResponse] = useState("All")
+  const [search, setSearch] = useState("")
+  const [sortBy, setSortBy] = useState("date-desc")
   const [saving, setSaving] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(null)
 
-  const filtered = referrals.filter(r =>
-    filterResponse === "All" || r.Response === filterResponse
-  )
+  const filtered = referrals.filter(r => {
+    const responseMatch = filterResponse === "All" || r.Response === filterResponse
+    const q = search.trim().toLowerCase()
+    const searchMatch = !q || (r.Company || "").toLowerCase().includes(q) || (r["Person Name"] || "").toLowerCase().includes(q)
+    return responseMatch && searchMatch
+  })
+
+  const dateVal = r => { const d = new Date(r["Date Sent"]); return isNaN(d) ? 0 : d.getTime() }
+  const sorted = [...filtered].sort((a, b) => {
+    if (sortBy === "date-asc") return dateVal(a) - dateVal(b)
+    if (sortBy === "company-az") return (a.Company || "").localeCompare(b.Company || "")
+    return dateVal(b) - dateVal(a)
+  })
 
   const today = new Date().toISOString().split("T")[0]
   const todayCount = referrals.filter(r => r["Date Sent"] === today).length
   const goalPct = Math.min((todayCount / 3) * 100, 100)
+
+  useEffect(() => {
+    if (!showForm) return
+    const handler = e => { if (e.key === "Escape") closeForm() }
+    window.addEventListener("keydown", handler)
+    return () => window.removeEventListener("keydown", handler)
+  }, [showForm])
 
   function openAdd() { setForm(EMPTY_FORM); setEditing(null); setShowForm(true) }
 
@@ -66,9 +86,8 @@ export default function Referrals() {
   }
 
   async function handleDelete(ref) {
-    if (confirm(`Delete referral for ${ref.Company}?`)) {
-      await deleteReferral(ref._rowIndex)
-    }
+    await deleteReferral(ref._rowIndex)
+    setConfirmDelete(null)
   }
 
   if (loading) return (
@@ -122,17 +141,27 @@ export default function Referrals() {
         )}
       </div>
 
-      {/* Filter */}
-      <div>
+      {/* Filters */}
+      <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "center" }}>
+        <input style={{ ...S.input, maxWidth: "220px" }} placeholder="Search company or person…" value={search} onChange={e => setSearch(e.target.value)} />
         <select value={filterResponse} onChange={e => setFilterResponse(e.target.value)} style={{ ...S.select, width: "auto" }}>
           <option value="All">All Responses</option>
           {REFERRAL_RESPONSES.map(r => <option key={r}>{r}</option>)}
         </select>
+        <select value={sortBy} onChange={e => setSortBy(e.target.value)} style={{ ...S.select, width: "auto" }}>
+          <option value="date-desc">Newest first</option>
+          <option value="date-asc">Oldest first</option>
+          <option value="company-az">Company A–Z</option>
+        </select>
+        {(search || filterResponse !== "All") && (
+          <button onClick={() => { setSearch(""); setFilterResponse("All") }} style={{ background: "transparent", border: "1px solid #21262d", color: "#8b949e", borderRadius: "8px", padding: "8px 12px", fontSize: "13px", cursor: "pointer" }}>Clear</button>
+        )}
+        <span style={{ color: "#8b949e", fontSize: "12px", marginLeft: "auto" }}>{sorted.length} of {referrals.length}</span>
       </div>
 
       {/* Table */}
       <div style={{ background: "#1a1a1a", border: "1px solid #222", borderRadius: "12px", overflow: "hidden" }}>
-        {filtered.length === 0 ? (
+        {sorted.length === 0 ? (
           <div style={{ textAlign: "center", padding: "60px 20px" }}>
             <div style={{ fontSize: "32px", marginBottom: "12px" }}>🤝</div>
             <p style={{ color: "#e0e0e0", fontWeight: "600", fontSize: "14px" }}>No referrals logged yet</p>
@@ -149,12 +178,13 @@ export default function Referrals() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((ref, i) => {
+                {sorted.map((ref, i) => {
                   const followUpDue = ref.Response === "Pending" &&
                     new Date() - new Date(ref["Date Sent"]) > 3 * 24 * 60 * 60 * 1000
                   return (
                     <tr key={i}
-                      style={{ background: followUpDue ? "rgba(245,166,35,0.04)" : "transparent", transition: "background 0.15s" }}
+                      onClick={() => openEdit(ref)}
+                      style={{ background: followUpDue ? "rgba(245,166,35,0.04)" : "transparent", transition: "background 0.15s", cursor: "pointer" }}
                       onMouseEnter={e => e.currentTarget.style.background = "#1e1e1e"}
                       onMouseLeave={e => e.currentTarget.style.background = followUpDue ? "rgba(245,166,35,0.04)" : "transparent"}
                     >
@@ -175,11 +205,19 @@ export default function Referrals() {
                           : <span style={{ color: "#555", fontSize: "12px" }}>{formatDate(ref["Follow Up Date"])}</span>
                         }
                       </td>
-                      <td style={S.td}>
-                        <div style={{ display: "flex", gap: "12px" }}>
-                          <button onClick={() => openEdit(ref)} style={{ background: "none", border: "none", color: "#58a6ff", fontSize: "12px", cursor: "pointer", fontWeight: "600" }}>Edit</button>
-                          <button onClick={() => handleDelete(ref)} style={{ background: "none", border: "none", color: "#f85149", fontSize: "12px", cursor: "pointer", fontWeight: "600" }}>Delete</button>
-                        </div>
+                      <td style={S.td} onClick={e => e.stopPropagation()}>
+                        {confirmDelete === ref._rowIndex ? (
+                          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                            <span style={{ fontSize: "11px", color: "#888" }}>Sure?</span>
+                            <button onClick={() => handleDelete(ref)} style={{ background: "none", border: "none", color: "#f85149", fontSize: "12px", cursor: "pointer", fontWeight: "700" }}>Yes</button>
+                            <button onClick={() => setConfirmDelete(null)} style={{ background: "none", border: "none", color: "#555", fontSize: "12px", cursor: "pointer" }}>No</button>
+                          </div>
+                        ) : (
+                          <div style={{ display: "flex", gap: "12px" }}>
+                            <button onClick={() => openEdit(ref)} style={{ background: "none", border: "none", color: "#58a6ff", fontSize: "12px", cursor: "pointer", fontWeight: "600" }}>Edit</button>
+                            <button onClick={() => setConfirmDelete(ref._rowIndex)} style={{ background: "none", border: "none", color: "#f85149", fontSize: "12px", cursor: "pointer", fontWeight: "600" }}>Delete</button>
+                          </div>
+                        )}
                       </td>
                     </tr>
                   )

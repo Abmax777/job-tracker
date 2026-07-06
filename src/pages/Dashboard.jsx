@@ -3,7 +3,8 @@ import FollowUpAlert from "../components/FollowUpAlert"
 import StatusBadge from "../components/StatusBadge"
 import { formatDate } from "../services/sheetsService"
 import { TrendingUp, Users, FileText, Award, ChevronRight } from "lucide-react"
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, LineChart, Line, CartesianGrid } from "recharts"
+import { useNavigate } from "react-router-dom"
 
 const PIPELINE = [
   { status: "Applied",             color: "#58a6ff", short: "Applied"   },
@@ -33,6 +34,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 export default function Dashboard() {
   const { applications, referrals, stats, loading } = useApp()
+  const navigate = useNavigate()
 
   if (loading) return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "60vh" }}>
@@ -60,6 +62,27 @@ export default function Dashboard() {
     count: p.count,
     color: p.color
   }))
+
+  // Weekly trend — last 8 weeks
+  const weeklyData = (() => {
+    const weeks = []
+    const now = new Date()
+    for (let i = 7; i >= 0; i--) {
+      const weekStart = new Date(now)
+      weekStart.setDate(now.getDate() - i * 7 - now.getDay())
+      weekStart.setHours(0, 0, 0, 0)
+      const weekEnd = new Date(weekStart)
+      weekEnd.setDate(weekStart.getDate() + 6)
+      weekEnd.setHours(23, 59, 59, 999)
+      const count = applications.filter(a => {
+        const d = new Date(a["Date Applied"])
+        return d >= weekStart && d <= weekEnd
+      }).length
+      const label = weekStart.toLocaleDateString("en-IN", { month: "short", day: "numeric" })
+      weeks.push({ week: label, count })
+    }
+    return weeks
+  })()
 
   const recentApps = [...applications]
     .sort((a, b) => new Date(b["Date Applied"]) - new Date(a["Date Applied"]))
@@ -183,19 +206,20 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Bar chart */}
+        {/* Weekly trend chart */}
         <div style={{ background: "#1a1a1a", borderRadius: "12px", padding: "20px", border: "1px solid #222" }}>
           <h2 style={{
             fontSize: "11px", fontWeight: "600",
             color: "#444", letterSpacing: "0.08em",
             marginBottom: "16px"
           }}>
-            VISUAL BREAKDOWN
+            APPLICATIONS PER WEEK
           </h2>
           <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={barData} barSize={22}>
+            <LineChart data={weeklyData}>
+              <CartesianGrid stroke="#1e1e1e" vertical={false} />
               <XAxis
-                dataKey="name"
+                dataKey="week"
                 tick={{ fontSize: 10, fill: "#555" }}
                 axisLine={false}
                 tickLine={false}
@@ -204,21 +228,18 @@ export default function Dashboard() {
                 tick={{ fontSize: 10, fill: "#555" }}
                 axisLine={false}
                 tickLine={false}
+                allowDecimals={false}
               />
-              <Tooltip
-                content={<CustomTooltip />}
-                cursor={{ fill: "rgba(255,255,255,0.03)" }}
+              <Tooltip content={<CustomTooltip />} cursor={{ stroke: "#2a2a2a", strokeWidth: 1 }} />
+              <Line
+                type="monotone"
+                dataKey="count"
+                stroke="#58a6ff"
+                strokeWidth={2}
+                dot={{ fill: "#58a6ff", r: 3, strokeWidth: 0 }}
+                activeDot={{ r: 5, fill: "#58a6ff" }}
               />
-              <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-                {barData.map((entry, i) => (
-                  <Cell
-                    key={i}
-                    fill={entry.color}
-                    opacity={entry.count === 0 ? 0.15 : 1}
-                  />
-                ))}
-              </Bar>
-            </BarChart>
+            </LineChart>
           </ResponsiveContainer>
         </div>
       </div>
@@ -228,11 +249,13 @@ export default function Dashboard() {
 
         {/* Recent applications */}
         <div style={{ background: "#1a1a1a", borderRadius: "12px", padding: "20px", border: "1px solid #222" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
+          <div onClick={() => navigate("/applications")} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px", cursor: "pointer" }}
+            onMouseEnter={e => e.currentTarget.querySelector("svg").style.color = "#58a6ff"}
+            onMouseLeave={e => e.currentTarget.querySelector("svg").style.color = "#555"}>
             <h2 style={{ fontSize: "11px", fontWeight: "600", color: "#444", letterSpacing: "0.08em", margin: 0 }}>
               RECENT APPLICATIONS
             </h2>
-            <ChevronRight size={14} color="#333" />
+            <ChevronRight size={14} color="#555" style={{ transition: "color 0.15s" }} />
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
             {recentApps.length === 0 ? (
@@ -267,11 +290,13 @@ export default function Dashboard() {
 
         {/* Recent referrals */}
         <div style={{ background: "#1a1a1a", borderRadius: "12px", padding: "20px", border: "1px solid #222" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
+          <div onClick={() => navigate("/referrals")} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px", cursor: "pointer" }}
+            onMouseEnter={e => e.currentTarget.querySelector("svg").style.color = "#58a6ff"}
+            onMouseLeave={e => e.currentTarget.querySelector("svg").style.color = "#555"}>
             <h2 style={{ fontSize: "11px", fontWeight: "600", color: "#444", letterSpacing: "0.08em", margin: 0 }}>
               RECENT REFERRALS
             </h2>
-            <ChevronRight size={14} color="#333" />
+            <ChevronRight size={14} color="#555" style={{ transition: "color 0.15s" }} />
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
             {recentReferrals.length === 0 ? (

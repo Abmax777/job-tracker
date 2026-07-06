@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useApp } from "../context/AppContext"
 import StatusBadge from "../components/StatusBadge"
 import { formatDate, APPLICATION_STATUSES, SOURCES, CV_TYPES } from "../services/sheetsService"
@@ -31,6 +31,7 @@ export default function Applications() {
   const [search, setSearch] = useState("")
   const [sortBy, setSortBy] = useState("date-desc")
   const [saving, setSaving] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(null)
 
   const filtered = applications.filter(app => {
   const statusMatch = filterStatus === "All" || app.Status === filterStatus
@@ -56,6 +57,13 @@ const sorted = [...filtered].sort((a, b) => {
     default:           return dateVal(b) - dateVal(a)  // newest first
   }
 })
+
+  useEffect(() => {
+    if (!showForm) return
+    const handler = e => { if (e.key === "Escape") closeForm() }
+    window.addEventListener("keydown", handler)
+    return () => window.removeEventListener("keydown", handler)
+  }, [showForm])
 
   function openAdd() { setForm(EMPTY_FORM); setEditing(null); setShowForm(true) }
 
@@ -86,9 +94,8 @@ const sorted = [...filtered].sort((a, b) => {
   }
 
   async function handleDelete(app) {
-    if (confirm(`Delete application for ${app.Company}?`)) {
-      await deleteApplication(app._rowIndex)
-    }
+    await deleteApplication(app._rowIndex)
+    setConfirmDelete(null)
   }
 
   if (loading) return (
@@ -117,8 +124,14 @@ const sorted = [...filtered].sort((a, b) => {
         </button>
       </div>
 
-      {/* Filters */}
-      <div style={{ display: "flex", gap: "10px" }}>
+      {/* Unified filter bar */}
+      <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "center" }}>
+        <input
+          style={{ ...S.input, maxWidth: "220px" }}
+          placeholder="Search company or role…"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
         <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={{ ...S.select, width: "auto" }}>
           <option value="All">All Statuses</option>
           {APPLICATION_STATUSES.map(s => <option key={s}>{s}</option>)}
@@ -127,38 +140,25 @@ const sorted = [...filtered].sort((a, b) => {
           <option value="All">All Sources</option>
           {SOURCES.map(s => <option key={s}>{s}</option>)}
         </select>
+        <select value={sortBy} onChange={e => setSortBy(e.target.value)} style={{ ...S.select, width: "auto" }}>
+          <option value="date-desc">Newest first</option>
+          <option value="date-asc">Oldest first</option>
+          <option value="company-az">Company A–Z</option>
+          <option value="company-za">Company Z–A</option>
+          <option value="status">Status</option>
+        </select>
+        {(search || filterStatus !== "All" || filterSource !== "All") && (
+          <button
+            onClick={() => { setSearch(""); setFilterStatus("All"); setFilterSource("All") }}
+            style={{ background: "transparent", border: "1px solid #21262d", color: "#8b949e", borderRadius: "8px", padding: "8px 12px", fontSize: "13px", cursor: "pointer" }}
+          >
+            Clear
+          </button>
+        )}
+        <span style={{ color: "#8b949e", fontSize: "12px", marginLeft: "auto" }}>
+          {sorted.length} of {applications.length}
+        </span>
       </div>
-
-      <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "center", marginBottom: "16px" }}>
-  <input
-    style={{ ...S.input, maxWidth: "260px" }}
-    placeholder="Search company or role…"
-    value={search}
-    onChange={e => setSearch(e.target.value)}
-  />
-  <select
-    style={{ ...S.select, maxWidth: "190px" }}
-    value={sortBy}
-    onChange={e => setSortBy(e.target.value)}
-  >
-    <option value="date-desc">Newest first</option>
-    <option value="date-asc">Oldest first</option>
-    <option value="company-az">Company A–Z</option>
-    <option value="company-za">Company Z–A</option>
-    <option value="status">Status</option>
-  </select>
-  {(search || filterStatus !== "All" || filterSource !== "All") && (
-    <button
-      onClick={() => { setSearch(""); setFilterStatus("All"); setFilterSource("All") }}
-      style={{ background: "transparent", border: "1px solid #21262d", color: "#8b949e", borderRadius: "8px", padding: "8px 12px", fontSize: "13px", cursor: "pointer" }}
-    >
-      Clear
-    </button>
-  )}
-  <span style={{ color: "#8b949e", fontSize: "12px", marginLeft: "auto" }}>
-    {sorted.length} of {applications.length}
-  </span>
-</div>
 
       {/* Table */}
       <div style={{ background: "#1a1a1a", border: "1px solid #222", borderRadius: "12px", overflow: "hidden" }}>
@@ -181,9 +181,10 @@ const sorted = [...filtered].sort((a, b) => {
               <tbody>
                 {sorted.map((app, i) => (
                   <tr key={i}
+                    onClick={() => openEdit(app)}
                     onMouseEnter={e => e.currentTarget.style.background = "#1e1e1e"}
                     onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                    style={{ transition: "background 0.15s" }}
+                    style={{ transition: "background 0.15s", cursor: "pointer" }}
                   >
                     <td style={{ ...S.td, fontWeight: "600" }}>{app.Company}</td>
                     <td style={S.tdMuted}>{app.Role}</td>
@@ -192,11 +193,19 @@ const sorted = [...filtered].sort((a, b) => {
                     <td style={S.td}><StatusBadge status={app.Status} /></td>
                     <td style={S.tdMuted}>{app["CV Used"]}</td>
                     <td style={S.tdMuted}>{app["Salary Expected"] || "--"}</td>
-                    <td style={{ ...S.td }}>
-                      <div style={{ display: "flex", gap: "12px" }}>
-                        <button onClick={() => openEdit(app)} style={{ background: "none", border: "none", color: "#58a6ff", fontSize: "12px", cursor: "pointer", fontWeight: "600" }}>Edit</button>
-                        <button onClick={() => handleDelete(app)} style={{ background: "none", border: "none", color: "#f85149", fontSize: "12px", cursor: "pointer", fontWeight: "600" }}>Delete</button>
-                      </div>
+                    <td style={{ ...S.td }} onClick={e => e.stopPropagation()}>
+                      {confirmDelete === app._rowIndex ? (
+                        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                          <span style={{ fontSize: "11px", color: "#888" }}>Sure?</span>
+                          <button onClick={() => handleDelete(app)} style={{ background: "none", border: "none", color: "#f85149", fontSize: "12px", cursor: "pointer", fontWeight: "700" }}>Yes</button>
+                          <button onClick={() => setConfirmDelete(null)} style={{ background: "none", border: "none", color: "#555", fontSize: "12px", cursor: "pointer" }}>No</button>
+                        </div>
+                      ) : (
+                        <div style={{ display: "flex", gap: "12px" }}>
+                          <button onClick={() => openEdit(app)} style={{ background: "none", border: "none", color: "#58a6ff", fontSize: "12px", cursor: "pointer", fontWeight: "600" }}>Edit</button>
+                          <button onClick={() => setConfirmDelete(app._rowIndex)} style={{ background: "none", border: "none", color: "#f85149", fontSize: "12px", cursor: "pointer", fontWeight: "600" }}>Delete</button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}
