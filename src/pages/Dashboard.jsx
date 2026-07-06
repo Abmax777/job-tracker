@@ -2,7 +2,7 @@ import { useApp } from "../context/AppContext"
 import FollowUpAlert from "../components/FollowUpAlert"
 import StatusBadge from "../components/StatusBadge"
 import { formatDate } from "../services/sheetsService"
-import { TrendingUp, Users, FileText, Award, ChevronRight } from "lucide-react"
+import { TrendingUp, Users, FileText, Award, ChevronRight, Clock } from "lucide-react"
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, LineChart, Line, CartesianGrid } from "recharts"
 import { useNavigate } from "react-router-dom"
 
@@ -63,6 +63,11 @@ export default function Dashboard() {
     color: p.color
   }))
 
+  const staleCount = applications.filter(
+    a => !["Rejected", "Withdrawn", "Offer"].includes(a.Status)
+      && new Date() - new Date(a["Date Applied"]) > 7 * 24 * 60 * 60 * 1000
+  ).length
+
   // Weekly trend — last 8 weeks
   const weeklyData = (() => {
     const weeks = []
@@ -121,26 +126,37 @@ export default function Dashboard() {
 
       <FollowUpAlert />
 
-      {/* Stat cards — clearly elevated above background */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px" }}>
+      {/* Stat cards */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "12px" }}>
         {[
-          { label: "Applications", value: stats.totalApplications,  icon: FileText,   color: "#58a6ff", sub: "total sent"     },
-          { label: "Active",       value: stats.activeApplications, icon: TrendingUp, color: "#ffffff", sub: "in pipeline"   },
-          { label: "Referrals",    value: stats.totalReferrals,     icon: Users,      color: "#f5a623", sub: "messages sent" },
-          { label: "Offers",       value: stats.offers,             icon: Award,      color: "#3fb950", sub: "received"      },
-        ].map(({ label, value, icon: Icon, color, sub }) => (
+          { label: "Applications", value: stats.totalApplications,  icon: FileText,   color: "#58a6ff", sub: "total sent",     onClick: null            },
+          { label: "Active",       value: stats.activeApplications, icon: TrendingUp, color: "#ffffff", sub: "in pipeline",   onClick: null            },
+          { label: "Referrals",    value: stats.totalReferrals,     icon: Users,      color: "#f5a623", sub: "messages sent", onClick: null            },
+          { label: "Offers",       value: stats.offers,             icon: Award,      color: "#3fb950", sub: "received",      onClick: null            },
+          {
+            label: "Stale",
+            value: staleCount,
+            icon: Clock,
+            color: staleCount > 0 ? "#f5a623" : "#3a3a3a",
+            sub: "no update 7d+",
+            onClick: () => navigate("/applications"),
+            alert: staleCount > 0,
+          },
+        ].map(({ label, value, icon: Icon, color, sub, onClick, alert }) => (
           <div
             key={label}
+            onClick={onClick}
             style={{
-              background: "#1a1a1a",
+              background: alert ? "rgba(245,166,35,0.06)" : "#1a1a1a",
               borderRadius: "12px",
               padding: "24px 20px",
               transition: "background 0.2s ease",
-              cursor: "default",
-              border: "1px solid #222"
+              cursor: onClick ? "pointer" : "default",
+              border: alert ? "1px solid rgba(245,166,35,0.25)" : "1px solid #222",
+              position: "relative",
             }}
-            onMouseEnter={e => e.currentTarget.style.background = "#202020"}
-            onMouseLeave={e => e.currentTarget.style.background = "#1a1a1a"}
+            onMouseEnter={e => e.currentTarget.style.background = alert ? "rgba(245,166,35,0.1)" : "#202020"}
+            onMouseLeave={e => e.currentTarget.style.background = alert ? "rgba(245,166,35,0.06)" : "#1a1a1a"}
           >
             <Icon size={16} color={color} strokeWidth={1.8} style={{ marginBottom: "16px", opacity: 0.8 }} />
             <div style={{
@@ -153,9 +169,14 @@ export default function Dashboard() {
             <div style={{ fontSize: "13px", fontWeight: "600", color: "#ccc", marginTop: "8px" }}>
               {label}
             </div>
-            <div style={{ fontSize: "11px", color: "#444", marginTop: "2px" }}>
+            <div style={{ fontSize: "11px", color: alert ? "#8b6914" : "#444", marginTop: "2px" }}>
               {sub}
             </div>
+            {alert && onClick && (
+              <span style={{ position: "absolute", top: "14px", right: "14px", fontSize: "10px", color: "#8b6914" }}>
+                View →
+              </span>
+            )}
           </div>
         ))}
       </div>
