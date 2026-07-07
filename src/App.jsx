@@ -6,23 +6,39 @@ import Dashboard from "./pages/Dashboard"
 import Applications from "./pages/Applications"
 import Referrals from "./pages/Referrals"
 import Interviews from "./pages/Interviews"
+import { useIsMobile } from "./hooks/useIsMobile"
+
+function Layout({ children }) {
+  const isMobile = useIsMobile()
+  return (
+    <div style={{ display: "flex", minHeight: "100vh", background: "#141414" }}>
+      <Sidebar />
+      <main style={{
+        marginLeft: isMobile ? "0" : "224px",
+        padding: isMobile ? "16px 14px" : "24px",
+        paddingBottom: isMobile ? "76px" : "24px",
+        flex: 1,
+        minWidth: 0,
+      }}>
+        {children}
+      </main>
+    </div>
+  )
+}
 
 export default function App() {
   return (
     <AppProvider>
       <BrowserRouter basename={import.meta.env.DEV ? "/" : "/job-tracker/"}>
-        <div className="flex min-h-screen" style={{ background: "#141414" }}>
-          <Sidebar />
-          <main style={{ marginLeft: "224px", padding: "24px", flex: 1 }}>
-            <Routes>
-              <Route path="/" element={<Navigate to="dashboard" replace />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/applications" element={<Applications />} />
-              <Route path="/referrals" element={<Referrals />} />
-              <Route path="/interviews" element={<Interviews />} />
-            </Routes>
-          </main>
-        </div>
+        <Layout>
+          <Routes>
+            <Route path="/" element={<Navigate to="dashboard" replace />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/applications" element={<Applications />} />
+            <Route path="/referrals" element={<Referrals />} />
+            <Route path="/interviews" element={<Interviews />} />
+          </Routes>
+        </Layout>
         <Toaster
           position="top-right"
           toastOptions={{

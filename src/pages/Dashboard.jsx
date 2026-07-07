@@ -1,4 +1,5 @@
 import { useApp } from "../context/AppContext"
+import { useIsMobile } from "../hooks/useIsMobile"
 import FollowUpAlert from "../components/FollowUpAlert"
 import StatusBadge from "../components/StatusBadge"
 import { formatDate } from "../services/sheetsService"
@@ -35,6 +36,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 export default function Dashboard() {
   const { applications, referrals, stats, loading } = useApp()
   const navigate = useNavigate()
+  const isMobile = useIsMobile()
 
   if (loading) return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "60vh" }}>
@@ -127,7 +129,7 @@ export default function Dashboard() {
       <FollowUpAlert />
 
       {/* Stat cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "12px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(3, 1fr)" : "repeat(5, 1fr)", gap: isMobile ? "8px" : "12px" }}>
         {[
           { label: "Applications", value: stats.totalApplications,  icon: FileText,   color: "#58a6ff", sub: "total sent",     onClick: null            },
           { label: "Active",       value: stats.activeApplications, icon: TrendingUp, color: "#ffffff", sub: "in pipeline",   onClick: null            },
@@ -149,7 +151,7 @@ export default function Dashboard() {
             style={{
               background: alert ? "rgba(245,166,35,0.06)" : "#1a1a1a",
               borderRadius: "12px",
-              padding: "24px 20px",
+              padding: isMobile ? "14px 10px" : "24px 20px",
               transition: "background 0.2s ease",
               cursor: onClick ? "pointer" : "default",
               border: alert ? "1px solid rgba(245,166,35,0.25)" : "1px solid #222",
@@ -158,18 +160,18 @@ export default function Dashboard() {
             onMouseEnter={e => e.currentTarget.style.background = alert ? "rgba(245,166,35,0.1)" : "#202020"}
             onMouseLeave={e => e.currentTarget.style.background = alert ? "rgba(245,166,35,0.06)" : "#1a1a1a"}
           >
-            <Icon size={16} color={color} strokeWidth={1.8} style={{ marginBottom: "16px", opacity: 0.8 }} />
+            <Icon size={isMobile ? 13 : 16} color={color} strokeWidth={1.8} style={{ marginBottom: isMobile ? "8px" : "16px", opacity: 0.8 }} />
             <div style={{
-              fontSize: "40px", fontWeight: "800",
+              fontSize: isMobile ? "24px" : "40px", fontWeight: "800",
               color, lineHeight: 1,
               letterSpacing: "-1px"
             }}>
               {value}
             </div>
-            <div style={{ fontSize: "13px", fontWeight: "600", color: "#ccc", marginTop: "8px" }}>
+            <div style={{ fontSize: isMobile ? "10px" : "13px", fontWeight: "600", color: "#ccc", marginTop: isMobile ? "4px" : "8px" }}>
               {label}
             </div>
-            <div style={{ fontSize: "11px", color: alert ? "#8b6914" : "#444", marginTop: "2px" }}>
+            <div style={{ fontSize: "10px", color: alert ? "#8b6914" : "#444", marginTop: "2px", display: isMobile ? "none" : "block" }}>
               {sub}
             </div>
             {alert && onClick && (
@@ -182,7 +184,7 @@ export default function Dashboard() {
       </div>
 
       {/* Pipeline + Chart */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: "16px" }}>
 
         {/* Pipeline stages */}
         <div style={{ background: "#1a1a1a", borderRadius: "12px", padding: "20px", border: "1px solid #222" }}>
@@ -266,7 +268,7 @@ export default function Dashboard() {
       </div>
 
       {/* Recent activity */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: "16px" }}>
 
         {/* Recent applications */}
         <div style={{ background: "#1a1a1a", borderRadius: "12px", padding: "20px", border: "1px solid #222" }}>

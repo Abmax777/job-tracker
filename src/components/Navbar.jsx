@@ -1,9 +1,8 @@
 import { NavLink } from "react-router-dom"
 import { useApp } from "../context/AppContext"
-import {
-  LayoutDashboard, FileText, Users, Calendar, TrendingUp, RefreshCw
-} from "lucide-react"
+import { LayoutDashboard, FileText, Users, Calendar, TrendingUp, RefreshCw } from "lucide-react"
 import { useState } from "react"
+import { useIsMobile } from "../hooks/useIsMobile"
 
 const NAV_ITEMS = [
   { to: "/dashboard",    icon: LayoutDashboard, label: "Dashboard"    },
@@ -15,6 +14,7 @@ const NAV_ITEMS = [
 export default function Sidebar() {
   const { stats, loadAllData } = useApp()
   const [refreshing, setRefreshing] = useState(false)
+  const isMobile = useIsMobile()
 
   async function handleRefresh() {
     setRefreshing(true)
@@ -28,6 +28,54 @@ export default function Sidebar() {
     "/interviews":   stats.totalInterviews,
   }
 
+  // ── Mobile: fixed bottom tab bar ──────────────────────────────
+  if (isMobile) {
+    return (
+      <nav style={{
+        position: "fixed", bottom: 0, left: 0, right: 0, height: "60px",
+        background: "#0f0f0f", borderTop: "1px solid #1a1a1a",
+        display: "flex", alignItems: "center", justifyContent: "space-around",
+        zIndex: 40, paddingBottom: "env(safe-area-inset-bottom)",
+      }}>
+        {NAV_ITEMS.map(({ to, icon: Icon, label }) => (
+          <NavLink
+            key={to}
+            to={to}
+            style={({ isActive }) => ({
+              display: "flex", flexDirection: "column", alignItems: "center",
+              gap: "3px", textDecoration: "none", padding: "6px 12px",
+              color: isActive ? "#58a6ff" : "#555",
+              position: "relative",
+            })}
+          >
+            {({ isActive }) => (
+              <>
+                <div style={{ position: "relative" }}>
+                  <Icon size={20} strokeWidth={isActive ? 2.2 : 1.8} />
+                  {counts[to] > 0 && (
+                    <span style={{
+                      position: "absolute", top: "-4px", right: "-6px",
+                      fontSize: "9px", fontWeight: "700",
+                      background: "#58a6ff", color: "#000",
+                      borderRadius: "999px", padding: "1px 4px",
+                      lineHeight: 1.4,
+                    }}>
+                      {counts[to] > 99 ? "99+" : counts[to]}
+                    </span>
+                  )}
+                </div>
+                <span style={{ fontSize: "9px", fontWeight: isActive ? "700" : "500", letterSpacing: "0.02em" }}>
+                  {label}
+                </span>
+              </>
+            )}
+          </NavLink>
+        ))}
+      </nav>
+    )
+  }
+
+  // ── Desktop: sidebar ──────────────────────────────────────────
   return (
     <aside style={{
       position: "fixed", top: 0, left: 0, height: "100vh", width: "220px",
@@ -69,7 +117,7 @@ export default function Sidebar() {
                 color: isActive ? "#ffffff" : "#666",
               })}
               onMouseEnter={e => {
-                if (!e.currentTarget.className.includes('active')) {
+                if (!e.currentTarget.getAttribute('aria-current')) {
                   e.currentTarget.style.color = "#aaa"
                   e.currentTarget.style.background = "#111"
                 }

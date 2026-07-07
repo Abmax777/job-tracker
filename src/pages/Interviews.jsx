@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import { useIsMobile } from "../hooks/useIsMobile"
 import { useApp } from "../context/AppContext"
 import StatusBadge from "../components/StatusBadge"
 import { formatDate, INTERVIEW_TYPES } from "../services/sheetsService"
@@ -25,6 +26,7 @@ const EMPTY_FORM = {
 
 export default function Interviews() {
   const { interviews, applications, addInterview, updateInterview, deleteInterview, loading } = useApp()
+  const isMobile = useIsMobile()
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState(EMPTY_FORM)
   const [editing, setEditing] = useState(null)
@@ -104,9 +106,9 @@ export default function Interviews() {
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
 
       {/* Header */}
-      <div style={{ paddingBottom: "20px", borderBottom: "1px solid #1e1e1e", display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+      <div style={{ paddingBottom: "20px", borderBottom: "1px solid #1e1e1e", display: "flex", alignItems: isMobile ? "center" : "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}>
         <div>
-          <h1 style={{ fontSize: "30px", fontWeight: "800", color: "#ffffff", margin: 0, letterSpacing: "-0.5px" }}>Interviews</h1>
+          <h1 style={{ fontSize: isMobile ? "22px" : "30px", fontWeight: "800", color: "#ffffff", margin: 0, letterSpacing: "-0.5px" }}>Interviews</h1>
           <p style={{ color: "#555", fontSize: "13px", marginTop: "6px" }}>
             {interviews.length} total · {upcoming.length} upcoming
           </p>
