@@ -322,27 +322,25 @@ export default function Applications() {
                       </div>
                     </div>
 
-                    {/* Meta grid */}
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 10px", margin: "8px 0" }}>
-                      <div>
-                        <div style={{ fontSize: "10px", color: "#444", marginBottom: "2px" }}>DATE</div>
-                        <div style={{ fontSize: "11px", color: "#888" }}>{formatDate(app["Date Applied"])}</div>
-                      </div>
-                      <div>
-                        <div style={{ fontSize: "10px", color: "#444", marginBottom: "2px" }}>SOURCE</div>
-                        <div style={{ fontSize: "11px", color: "#888", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{app.Source || "—"}</div>
-                      </div>
+                    {/* Meta — single row of inline chips */}
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "5px", margin: "8px 0" }}>
+                      <span style={{ fontSize: "10px", color: "#666", background: "rgba(255,255,255,0.06)", borderRadius: "5px", padding: "2px 7px" }}>
+                        {formatDate(app["Date Applied"])}
+                      </span>
+                      {app.Source && (
+                        <span style={{ fontSize: "10px", color: "#666", background: "rgba(255,255,255,0.06)", borderRadius: "5px", padding: "2px 7px" }}>
+                          {app.Source}
+                        </span>
+                      )}
                       {app["CV Used"] && (
-                        <div style={{ gridColumn: "1 / -1" }}>
-                          <div style={{ fontSize: "10px", color: "#444", marginBottom: "2px" }}>CV</div>
-                          <div style={{ fontSize: "11px", color: "#888" }}>{app["CV Used"]}</div>
-                        </div>
+                        <span style={{ fontSize: "10px", color: "#666", background: "rgba(255,255,255,0.06)", borderRadius: "5px", padding: "2px 7px" }}>
+                          {app["CV Used"]}
+                        </span>
                       )}
                       {app["Salary Expected"] && (
-                        <div style={{ gridColumn: "1 / -1" }}>
-                          <div style={{ fontSize: "10px", color: "#444", marginBottom: "2px" }}>SALARY</div>
-                          <div style={{ fontSize: "11px", color: "#3fb950" }}>{app["Salary Expected"]}</div>
-                        </div>
+                        <span style={{ fontSize: "10px", color: "#3fb950", background: "rgba(63,185,80,0.1)", borderRadius: "5px", padding: "2px 7px" }}>
+                          {app["Salary Expected"]}
+                        </span>
                       )}
                     </div>
 
