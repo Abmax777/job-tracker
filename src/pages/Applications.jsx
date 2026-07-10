@@ -201,7 +201,7 @@ export default function Applications() {
     </div>
   )
 
-  const CARD_H = isMobile ? 148 : 160
+  const CARD_H = isMobile ? 210 : 160
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
@@ -272,7 +272,7 @@ export default function Applications() {
       ) : (
         <div style={{
           display: "grid",
-          gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(auto-fill, minmax(170px, 1fr))",
+          gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fill, minmax(170px, 1fr))",
           gap: isMobile ? "10px" : "12px",
         }}>
           {sorted.map((app, i) => {
