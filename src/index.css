@@ -120,15 +120,27 @@ a { text-decoration: none; }
   transition: transform 0.52s cubic-bezier(0.4, 0, 0.2, 1);
   transform-style: preserve-3d;
 }
-.app-flip-card:hover .app-flip-inner { transform: rotateY(180deg); }
+/* Desktop only: flip on hover */
+@media (hover: hover) {
+  .app-flip-card:hover .app-flip-inner { transform: rotateY(180deg); }
+  .app-flip-card:hover .app-flip-front {
+    border-color: var(--glass-border-bright);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.14);
+  }
+}
+/* Mobile: flip on tap via JS-toggled class */
+.app-flip-card.is-flipped .app-flip-inner { transform: rotateY(180deg); }
+.app-flip-card.is-flipped .app-flip-front {
+  border-color: var(--glass-border-bright);
+}
 .app-flip-front, .app-flip-back {
   position: absolute; inset: 0;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   border-radius: 14px;
-  overflow: hidden;
 }
 .app-flip-front {
+  overflow: hidden;
   background: var(--glass-bg);
   backdrop-filter: var(--glass-blur-sm);
   -webkit-backdrop-filter: var(--glass-blur-sm);
@@ -138,9 +150,11 @@ a { text-decoration: none; }
   align-items: center; justify-content: center; gap: 10px;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
-.app-flip-card:hover .app-flip-front {
-  border-color: var(--glass-border-bright);
-  box-shadow: 0 8px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.14);
+/* Back face: allow scrolling for long content */
+.app-flip-back {
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 .app-flip-back {
   background: rgba(10,10,24,0.75);

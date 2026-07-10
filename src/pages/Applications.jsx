@@ -102,6 +102,7 @@ export default function Applications() {
   const [sortBy, setSortBy]           = useState("date-desc")
   const [saving, setSaving]           = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(null)
+  const [flippedCard, setFlippedCard] = useState(null)
 
   /* filter + sort */
   const filtered = applications.filter(app => {
@@ -170,7 +171,7 @@ export default function Applications() {
     </div>
   )
 
-  const CARD_H = isMobile ? 148 : 160
+  const CARD_H = isMobile ? 168 : 160
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
@@ -248,8 +249,9 @@ export default function Applications() {
             return (
               <div
                 key={i}
-                className="app-flip-card"
+                className={`app-flip-card${isMobile && flippedCard === i ? " is-flipped" : ""}`}
                 style={{ height: CARD_H }}
+                onClick={isMobile ? () => setFlippedCard(flippedCard === i ? null : i) : undefined}
               >
                 <div className="app-flip-inner">
 
