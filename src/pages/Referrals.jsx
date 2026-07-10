@@ -4,15 +4,17 @@ import { useApp } from "../context/AppContext"
 import StatusBadge from "../components/StatusBadge"
 import { formatDate, REFERRAL_RESPONSES, SOURCES } from "../services/sheetsService"
 
+const GLASS = "rgba(255,255,255,0.04)"
+const GLASS_BORDER = "1px solid rgba(255,255,255,0.09)"
 const S = {
-  card:    { background: "#1a1a1a", border: "1px solid #222", borderRadius: "12px", padding: "20px" },
-  input:   { background: "#111", border: "1px solid #2a2a2a", borderRadius: "8px", color: "#e0e0e0", width: "100%", padding: "8px 12px", fontSize: "13px", outline: "none" },
-  select:  { background: "#111", border: "1px solid #2a2a2a", borderRadius: "8px", color: "#e0e0e0", width: "100%", padding: "8px 12px", fontSize: "13px", outline: "none" },
-  label:   { color: "#555", fontSize: "12px", fontWeight: "500", display: "block", marginBottom: "4px" },
-  th:      { color: "#444", fontSize: "11px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.06em", padding: "12px 16px", textAlign: "left", background: "#111", borderBottom: "1px solid #1e1e1e" },
-  td:      { padding: "12px 16px", fontSize: "13px", color: "#e0e0e0", borderBottom: "1px solid #1a1a1a" },
-  tdMuted: { padding: "12px 16px", fontSize: "13px", color: "#555", borderBottom: "1px solid #1a1a1a" },
-  modal:   { background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: "16px", width: "100%", maxWidth: "520px", maxHeight: "90vh", overflowY: "auto", padding: "24px" },
+  card:    { background: GLASS, backdropFilter: "blur(22px) saturate(160%)", WebkitBackdropFilter: "blur(22px) saturate(160%)", border: GLASS_BORDER, borderRadius: "12px", padding: "20px", boxShadow: "0 4px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.07)" },
+  input:   { background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", color: "#e0e0e0", width: "100%", padding: "8px 12px", fontSize: "13px", outline: "none" },
+  select:  { background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", color: "#e0e0e0", width: "100%", padding: "8px 12px", fontSize: "13px", outline: "none" },
+  label:   { color: "rgba(255,255,255,0.4)", fontSize: "12px", fontWeight: "500", display: "block", marginBottom: "4px" },
+  th:      { color: "rgba(255,255,255,0.25)", fontSize: "11px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.06em", padding: "12px 16px", textAlign: "left", background: "rgba(0,0,0,0.2)", borderBottom: "1px solid rgba(255,255,255,0.06)" },
+  td:      { padding: "12px 16px", fontSize: "13px", color: "#e0e0e0", borderBottom: "1px solid rgba(255,255,255,0.04)" },
+  tdMuted: { padding: "12px 16px", fontSize: "13px", color: "rgba(255,255,255,0.38)", borderBottom: "1px solid rgba(255,255,255,0.04)" },
+  modal:   { background: "rgba(10,10,28,0.82)", backdropFilter: "blur(40px) saturate(160%)", WebkitBackdropFilter: "blur(40px) saturate(160%)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "16px", width: "100%", maxWidth: "520px", maxHeight: "90vh", overflowY: "auto", padding: "24px", boxShadow: "0 24px 80px rgba(0,0,0,0.6)" },
 }
 
 const EMPTY_FORM = {
@@ -102,7 +104,7 @@ export default function Referrals() {
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
 
       {/* Header */}
-      <div style={{ paddingBottom: "20px", borderBottom: "1px solid #1e1e1e", display: "flex", alignItems: isMobile ? "center" : "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}>
+      <div style={{ paddingBottom: "20px", borderBottom: "1px solid rgba(255,255,255,0.07)", display: "flex", alignItems: isMobile ? "center" : "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}>
         <div>
           <h1 style={{ fontSize: isMobile ? "22px" : "30px", fontWeight: "800", color: "#ffffff", margin: 0, letterSpacing: "-0.5px" }}>Referrals</h1>
           <p style={{ color: "#555", fontSize: "13px", marginTop: "6px" }}>
@@ -162,7 +164,7 @@ export default function Referrals() {
       </div>
 
       {/* Table */}
-      <div style={{ background: "#1a1a1a", border: "1px solid #222", borderRadius: "12px", overflow: "hidden" }}>
+      <div style={{ background: "rgba(255,255,255,0.03)", backdropFilter: "blur(22px) saturate(160%)", WebkitBackdropFilter: "blur(22px) saturate(160%)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px", overflow: "hidden", boxShadow: "0 4px 32px rgba(0,0,0,0.4)" }}>
         {sorted.length === 0 ? (
           <div style={{ textAlign: "center", padding: "60px 20px" }}>
             <div style={{ fontSize: "32px", marginBottom: "12px" }}>🤝</div>
@@ -187,8 +189,8 @@ export default function Referrals() {
                     <tr key={i}
                       onClick={() => openEdit(ref)}
                       style={{ background: followUpDue ? "rgba(245,166,35,0.04)" : "transparent", transition: "background 0.15s", cursor: "pointer" }}
-                      onMouseEnter={e => e.currentTarget.style.background = "#1e1e1e"}
-                      onMouseLeave={e => e.currentTarget.style.background = followUpDue ? "rgba(245,166,35,0.04)" : "transparent"}
+                      onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.05)"}
+                      onMouseLeave={e => e.currentTarget.style.background = followUpDue ? "rgba(245,166,35,0.05)" : "transparent"}
                     >
                       <td style={{ ...S.td, fontWeight: "600" }}>{ref.Company}</td>
                       <td style={S.tdMuted}>{ref["Person Name"]}</td>

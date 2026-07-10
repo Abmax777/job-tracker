@@ -12,7 +12,16 @@ import { useIsMobile } from "./hooks/useIsMobile"
 function Layout({ children }) {
   const isMobile = useIsMobile()
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#141414" }}>
+    <div style={{ display: "flex", minHeight: "100vh", position: "relative" }}>
+      {/* Animated mesh background */}
+      <div className="mesh-bg">
+        <div className="mesh-blob mesh-blob-1" />
+        <div className="mesh-blob mesh-blob-2" />
+        <div className="mesh-blob mesh-blob-3" />
+        <div className="mesh-blob mesh-blob-4" />
+        <div className="mesh-blob mesh-blob-5" />
+      </div>
+
       <Sidebar />
       <main style={{
         marginLeft: isMobile ? "0" : "224px",
@@ -20,6 +29,8 @@ function Layout({ children }) {
         paddingBottom: isMobile ? "76px" : "24px",
         flex: 1,
         minWidth: 0,
+        position: "relative",
+        zIndex: 1,
       }}>
         {children}
       </main>
@@ -46,11 +57,14 @@ export default function App() {
           toastOptions={{
             duration: 3000,
             style: {
-              background: "#161b22",
+              background: "rgba(20,20,40,0.85)",
+              backdropFilter: "blur(20px)",
+              WebkitBackdropFilter: "blur(20px)",
               color: "#e6edf3",
-              border: "1px solid #21262d",
-              borderRadius: "10px",
-              fontSize: "13px"
+              border: "1px solid rgba(255,255,255,0.12)",
+              borderRadius: "12px",
+              fontSize: "13px",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
             },
             success: { iconTheme: { primary: "#3fb950", secondary: "#161b22" } },
             error: { iconTheme: { primary: "#f85149", secondary: "#161b22" } },
