@@ -304,15 +304,6 @@ export default function Applications() {
                       </div>
                     </div>
 
-<<<<<<< HEAD
-                    {/* Meta — single row of inline chips */}
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "5px", margin: "8px 0" }}>
-                      <span style={{ fontSize: "10px", color: "#666", background: "rgba(255,255,255,0.06)", borderRadius: "5px", padding: "2px 7px" }}>
-                        {formatDate(app["Date Applied"])}
-                      </span>
-                      {app.Source && (
-                        <span style={{ fontSize: "10px", color: "#666", background: "rgba(255,255,255,0.06)", borderRadius: "5px", padding: "2px 7px" }}>
-=======
                     {/* Meta — wrapping chips */}
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "5px", margin: "8px 0" }}>
                       <span style={{ fontSize: "10px", color: "#888", background: "rgba(255,255,255,0.06)", borderRadius: "5px", padding: "2px 7px" }}>
@@ -320,16 +311,11 @@ export default function Applications() {
                       </span>
                       {app.Source && (
                         <span style={{ fontSize: "10px", color: "#888", background: "rgba(255,255,255,0.06)", borderRadius: "5px", padding: "2px 7px" }}>
->>>>>>> liquid-glass
                           {app.Source}
                         </span>
                       )}
                       {app["CV Used"] && (
-<<<<<<< HEAD
-                        <span style={{ fontSize: "10px", color: "#666", background: "rgba(255,255,255,0.06)", borderRadius: "5px", padding: "2px 7px" }}>
-=======
                         <span style={{ fontSize: "10px", color: "#888", background: "rgba(255,255,255,0.06)", borderRadius: "5px", padding: "2px 7px" }}>
->>>>>>> liquid-glass
                           {app["CV Used"]}
                         </span>
                       )}
