@@ -61,30 +61,32 @@ function guessDomain(company = "") {
     .trim()
 }
 
+// Google returns a 16×16 grey globe when no favicon exists — detect by naturalWidth at sz=64
+// If Google found a real icon it'll be 64px; the default globe comes back at 16px upscaled
 function CompanyLogo({ company }) {
   const [failed, setFailed] = useState(false)
   const initials = (company || "?").split(/[\s\-_]+/).map(w => w[0]).join("").slice(0, 2).toUpperCase()
   const color = avatarColor(company)
   const domain = guessDomain(company)
 
-  if (failed || !domain) {
-    return (
-      <div style={{
-        width: 44, height: 44, borderRadius: "10px",
-        background: `${color}18`, border: `1.5px solid ${color}33`,
-        display: "flex", alignItems: "center", justifyContent: "center",
-        fontSize: "15px", fontWeight: "800", color, flexShrink: 0,
-        letterSpacing: "-0.5px",
-      }}>
-        {initials}
-      </div>
-    )
-  }
+  const Initials = (
+    <div style={{
+      width: 44, height: 44, borderRadius: "10px",
+      background: `${color}18`, border: `1.5px solid ${color}33`,
+      display: "flex", alignItems: "center", justifyContent: "center",
+      fontSize: "15px", fontWeight: "800", color, flexShrink: 0,
+      letterSpacing: "-0.5px",
+    }}>
+      {initials}
+    </div>
+  )
+
+  if (failed || !domain) return Initials
 
   return (
     <div style={{
       width: 44, height: 44, borderRadius: "10px",
-      background: "#1e1e1e",
+      background: "#ffffff",
       display: "flex", alignItems: "center", justifyContent: "center",
       overflow: "hidden", flexShrink: 0,
       border: "1px solid #2a2a2a",
@@ -92,8 +94,12 @@ function CompanyLogo({ company }) {
       <img
         src={`https://www.google.com/s2/favicons?domain=${domain}.com&sz=64`}
         alt={company}
+        onLoad={e => {
+          // Google's "no favicon" default is always 16px regardless of sz param
+          if (e.currentTarget.naturalWidth <= 16) setFailed(true)
+        }}
         onError={() => setFailed(true)}
-        style={{ width: 28, height: 28, objectFit: "contain", imageRendering: "auto" }}
+        style={{ width: 30, height: 30, objectFit: "contain" }}
       />
     </div>
   )
