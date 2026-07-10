@@ -17,6 +17,8 @@ export default function FollowUpAlert() {
       onClick={() => navigate("/referrals")}
       style={{
         background: "rgba(210,153,34,0.07)",
+        backdropFilter: "blur(16px) saturate(150%)",
+        WebkitBackdropFilter: "blur(16px) saturate(150%)",
         border: "1px solid rgba(210,153,34,0.22)",
         borderRadius: "10px",
         padding: "11px 16px",

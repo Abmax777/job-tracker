@@ -4,38 +4,7 @@ import { useApp } from "../context/AppContext"
 import StatusBadge from "../components/StatusBadge"
 import { formatDate, APPLICATION_STATUSES, SOURCES, CV_TYPES } from "../services/sheetsService"
 
-/* ── Inject flip-card CSS once ─────────────────────────────────── */
-const FLIP_CSS = `
-  .app-flip-card { perspective: 1000px; }
-  .app-flip-inner {
-    position: relative; width: 100%; height: 100%;
-    transition: transform 0.52s cubic-bezier(0.4, 0, 0.2, 1);
-    transform-style: preserve-3d;
-  }
-  .app-flip-card:hover .app-flip-inner { transform: rotateY(180deg); }
-  .app-flip-front, .app-flip-back {
-    position: absolute; inset: 0;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-    border-radius: 12px;
-    overflow: hidden;
-  }
-  .app-flip-front {
-    background: #1a1a1a;
-    border: 1px solid #222;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 10px;
-    transition: border-color 0.2s;
-  }
-  .app-flip-card:hover .app-flip-front { border-color: #333; }
-  .app-flip-back {
-    background: #161b22;
-    border: 1px solid #30363d;
-    transform: rotateY(180deg);
-    display: flex; flex-direction: column; justify-content: space-between;
-    padding: 14px;
-  }
-`
+// Flip CSS is now in index.css
 
 /* ── Helpers ───────────────────────────────────────────────────── */
 const STATUS_COLORS = {
@@ -107,10 +76,10 @@ function CompanyLogo({ company }) {
 
 /* ── Styles ────────────────────────────────────────────────────── */
 const S = {
-  input:  { background: "#111", border: "1px solid #2a2a2a", borderRadius: "8px", color: "#e0e0e0", width: "100%", padding: "8px 12px", fontSize: "13px", outline: "none" },
-  select: { background: "#111", border: "1px solid #2a2a2a", borderRadius: "8px", color: "#e0e0e0", width: "100%", padding: "8px 12px", fontSize: "13px", outline: "none" },
-  label:  { color: "#555", fontSize: "12px", fontWeight: "500", display: "block", marginBottom: "4px" },
-  modal:  { background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: "16px", width: "100%", maxWidth: "520px", maxHeight: "90vh", overflowY: "auto", padding: "24px" },
+  input:  { background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", color: "#e0e0e0", width: "100%", padding: "8px 12px", fontSize: "13px", outline: "none" },
+  select: { background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", color: "#e0e0e0", width: "100%", padding: "8px 12px", fontSize: "13px", outline: "none" },
+  label:  { color: "rgba(255,255,255,0.4)", fontSize: "12px", fontWeight: "500", display: "block", marginBottom: "4px" },
+  modal:  { background: "rgba(10,10,28,0.82)", backdropFilter: "blur(40px) saturate(160%)", WebkitBackdropFilter: "blur(40px) saturate(160%)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "16px", width: "100%", maxWidth: "520px", maxHeight: "90vh", overflowY: "auto", padding: "24px", boxShadow: "0 24px 80px rgba(0,0,0,0.6)" },
 }
 
 const EMPTY_FORM = {
@@ -133,6 +102,7 @@ export default function Applications() {
   const [sortBy, setSortBy]           = useState("date-desc")
   const [saving, setSaving]           = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(null)
+  const [flippedCard, setFlippedCard] = useState(null)
 
   /* filter + sort */
   const filtered = applications.filter(app => {
@@ -206,11 +176,8 @@ export default function Applications() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
 
-      {/* Inject flip CSS */}
-      <style>{FLIP_CSS}</style>
-
       {/* Header */}
-      <div style={{ paddingBottom: "20px", borderBottom: "1px solid #1e1e1e", display: "flex", alignItems: isMobile ? "center" : "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}>
+      <div style={{ paddingBottom: "20px", borderBottom: "1px solid rgba(255,255,255,0.07)", display: "flex", alignItems: isMobile ? "center" : "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}>
         <div>
           <h1 style={{ fontSize: isMobile ? "22px" : "30px", fontWeight: "800", color: "#ffffff", margin: 0, letterSpacing: "-0.5px" }}>Applications</h1>
           <p style={{ color: "#555", fontSize: "13px", marginTop: "6px" }}>
@@ -282,8 +249,9 @@ export default function Applications() {
             return (
               <div
                 key={i}
-                className="app-flip-card"
+                className={`app-flip-card${isMobile && flippedCard === i ? " is-flipped" : ""}`}
                 style={{ height: CARD_H }}
+                onClick={isMobile ? () => setFlippedCard(flippedCard === i ? null : i) : undefined}
               >
                 <div className="app-flip-inner">
 
@@ -306,10 +274,24 @@ export default function Applications() {
                         {app.Status}
                       </span>
                     </div>
+                    {isMobile && (
+                      <div style={{ fontSize: "9px", color: "rgba(255,255,255,0.2)", letterSpacing: "0.05em" }}>
+                        TAP TO FLIP
+                      </div>
+                    )}
                   </div>
 
                   {/* ── Back ──────────────────────────────── */}
-                  <div className="app-flip-back">
+                  <div className="app-flip-back" style={{ position: "relative" }}>
+                    {/* Flip-back hint — mobile only */}
+                    {isMobile && (
+                      <div style={{
+                        position: "absolute", top: "10px", right: "10px",
+                        fontSize: "14px", opacity: 0.2, pointerEvents: "none",
+                        transform: "scaleX(-1)",
+                      }}>↩</div>
+                    )}
+
                     {/* Role */}
                     <div>
                       <div style={{ fontSize: "11px", color: "#555", fontWeight: "600", letterSpacing: "0.05em", marginBottom: "3px" }}>ROLE</div>
@@ -322,6 +304,7 @@ export default function Applications() {
                       </div>
                     </div>
 
+<<<<<<< HEAD
                     {/* Meta — single row of inline chips */}
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "5px", margin: "8px 0" }}>
                       <span style={{ fontSize: "10px", color: "#666", background: "rgba(255,255,255,0.06)", borderRadius: "5px", padding: "2px 7px" }}>
@@ -329,11 +312,24 @@ export default function Applications() {
                       </span>
                       {app.Source && (
                         <span style={{ fontSize: "10px", color: "#666", background: "rgba(255,255,255,0.06)", borderRadius: "5px", padding: "2px 7px" }}>
+=======
+                    {/* Meta — wrapping chips */}
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "5px", margin: "8px 0" }}>
+                      <span style={{ fontSize: "10px", color: "#888", background: "rgba(255,255,255,0.06)", borderRadius: "5px", padding: "2px 7px" }}>
+                        {formatDate(app["Date Applied"])}
+                      </span>
+                      {app.Source && (
+                        <span style={{ fontSize: "10px", color: "#888", background: "rgba(255,255,255,0.06)", borderRadius: "5px", padding: "2px 7px" }}>
+>>>>>>> liquid-glass
                           {app.Source}
                         </span>
                       )}
                       {app["CV Used"] && (
+<<<<<<< HEAD
                         <span style={{ fontSize: "10px", color: "#666", background: "rgba(255,255,255,0.06)", borderRadius: "5px", padding: "2px 7px" }}>
+=======
+                        <span style={{ fontSize: "10px", color: "#888", background: "rgba(255,255,255,0.06)", borderRadius: "5px", padding: "2px 7px" }}>
+>>>>>>> liquid-glass
                           {app["CV Used"]}
                         </span>
                       )}
@@ -345,7 +341,7 @@ export default function Applications() {
                     </div>
 
                     {/* Actions */}
-                    <div style={{ borderTop: "1px solid #21262d", paddingTop: "8px" }}>
+                    <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: "8px" }}>
                       {isConfirming ? (
                         <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
                           <span style={{ fontSize: "11px", color: "#888", flex: 1 }}>Delete?</span>

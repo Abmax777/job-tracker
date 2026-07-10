@@ -2,8 +2,19 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+:root {
+  --glass-bg:      rgba(255, 255, 255, 0.05);
+  --glass-bg-mid:  rgba(255, 255, 255, 0.08);
+  --glass-border:  rgba(255, 255, 255, 0.10);
+  --glass-border-bright: rgba(255, 255, 255, 0.18);
+  --glass-blur:    blur(22px) saturate(160%);
+  --glass-blur-sm: blur(12px) saturate(140%);
+  --glass-shadow:  0 4px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08);
+  --glass-shadow-sm: 0 2px 16px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
 body {
-  background: #0a0a0a;
+  background: #06060f;
   color: #e0e0e0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -11,11 +22,150 @@ body {
 
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #222; border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: #333; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); }
 
-input, select, textarea {
-  font-family: inherit;
+input, select, textarea { font-family: inherit; }
+a { text-decoration: none; }
+
+/* ── Animated mesh blobs ─────────────────────────────────────── */
+.mesh-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
 }
 
-a { text-decoration: none; }
+.mesh-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.55;
+  will-change: transform;
+}
+
+.mesh-blob-1 {
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, #3b1f8c 0%, transparent 70%);
+  top: -150px; left: -100px;
+  animation: blob1 22s ease-in-out infinite alternate;
+}
+.mesh-blob-2 {
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, #0e4f8a 0%, transparent 70%);
+  top: 20%; right: -80px;
+  animation: blob2 26s ease-in-out infinite alternate;
+}
+.mesh-blob-3 {
+  width: 450px; height: 450px;
+  background: radial-gradient(circle, #0a6e5e 0%, transparent 70%);
+  bottom: 5%; left: 20%;
+  animation: blob3 30s ease-in-out infinite alternate;
+}
+.mesh-blob-4 {
+  width: 380px; height: 380px;
+  background: radial-gradient(circle, #6b1060 0%, transparent 70%);
+  bottom: 15%; right: 10%;
+  animation: blob4 24s ease-in-out infinite alternate;
+}
+.mesh-blob-5 {
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, #1a3a7a 0%, transparent 70%);
+  top: 45%; left: 40%;
+  animation: blob5 18s ease-in-out infinite alternate;
+}
+
+@keyframes blob1 {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(80px, 120px) scale(1.15); }
+}
+@keyframes blob2 {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(-100px, 80px) scale(0.9); }
+}
+@keyframes blob3 {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(60px, -100px) scale(1.1); }
+}
+@keyframes blob4 {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(-70px, -60px) scale(1.2); }
+}
+@keyframes blob5 {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(100px, 50px) scale(0.85); }
+}
+
+/* ── Glass card helper class ─────────────────────────────────── */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+.glass-sm {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur-sm);
+  -webkit-backdrop-filter: var(--glass-blur-sm);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow-sm);
+}
+
+/* ── Flip card (Applications) ────────────────────────────────── */
+.app-flip-card { perspective: 1000px; }
+.app-flip-inner {
+  position: relative; width: 100%; height: 100%;
+  transition: transform 0.52s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-style: preserve-3d;
+}
+/* Desktop only: flip on hover */
+@media (hover: hover) {
+  .app-flip-card:hover .app-flip-inner { transform: rotateY(180deg); }
+  .app-flip-card:hover .app-flip-front {
+    border-color: var(--glass-border-bright);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.14);
+  }
+}
+/* Mobile: flip on tap via JS-toggled class */
+.app-flip-card.is-flipped .app-flip-inner { transform: rotateY(180deg); }
+.app-flip-card.is-flipped .app-flip-front {
+  border-color: var(--glass-border-bright);
+}
+.app-flip-front, .app-flip-back {
+  position: absolute; inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 14px;
+}
+.app-flip-front {
+  overflow: hidden;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur-sm);
+  -webkit-backdrop-filter: var(--glass-blur-sm);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow-sm);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 10px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+/* Back face */
+.app-flip-back {
+  background: rgba(10,10,24,0.75);
+  backdrop-filter: var(--glass-blur-sm);
+  -webkit-backdrop-filter: var(--glass-blur-sm);
+  border: 1px solid var(--glass-border-bright);
+  box-shadow: var(--glass-shadow);
+  transform: rotateY(180deg);
+  display: flex; flex-direction: column; justify-content: space-between;
+  padding: 14px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}

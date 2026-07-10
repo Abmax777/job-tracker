@@ -4,10 +4,10 @@ import { useIsMobile } from "../hooks/useIsMobile"
 const CV_VARIANTS = ["Specialist (AOSP)", "Generic"]
 
 const S = {
-  card:   { background: "#1a1a1a", border: "1px solid #222", borderRadius: "12px", padding: "20px" },
-  label:  { color: "#555", fontSize: "12px", fontWeight: "500", display: "block", marginBottom: "6px" },
-  input:  { background: "#111", border: "1px solid #2a2a2a", borderRadius: "8px", color: "#e0e0e0", width: "100%", padding: "10px 12px", fontSize: "13px", outline: "none", resize: "vertical", fontFamily: "inherit" },
-  select: { background: "#111", border: "1px solid #2a2a2a", borderRadius: "8px", color: "#e0e0e0", width: "100%", padding: "10px 12px", fontSize: "13px", outline: "none" },
+  card:   { background: "rgba(255,255,255,0.04)", backdropFilter: "blur(22px) saturate(160%)", WebkitBackdropFilter: "blur(22px) saturate(160%)", border: "1px solid rgba(255,255,255,0.09)", borderRadius: "12px", padding: "20px", boxShadow: "0 4px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.07)" },
+  label:  { color: "rgba(255,255,255,0.4)", fontSize: "12px", fontWeight: "500", display: "block", marginBottom: "6px" },
+  input:  { background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", color: "#e0e0e0", width: "100%", padding: "10px 12px", fontSize: "13px", outline: "none", resize: "vertical", fontFamily: "inherit" },
+  select: { background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", color: "#e0e0e0", width: "100%", padding: "10px 12px", fontSize: "13px", outline: "none" },
   tag:    { fontSize: "12px", padding: "4px 10px", borderRadius: "999px", fontWeight: "500", display: "inline-block" },
 }
 
@@ -98,7 +98,7 @@ export default function JDAnalyzer() {
     <div style={{ display: "flex", flexDirection: "column", gap: "20px", maxWidth: "860px" }}>
 
       {/* Header */}
-      <div style={{ paddingBottom: "20px", borderBottom: "1px solid #1e1e1e" }}>
+      <div style={{ paddingBottom: "20px", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
         <h1 style={{ fontSize: isMobile ? "22px" : "30px", fontWeight: "800", color: "#fff", margin: 0, letterSpacing: "-0.5px" }}>
           JD Analyzer
         </h1>

@@ -20,8 +20,10 @@ const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     return (
       <div style={{
-        background: "#1e1e1e",
-        border: "1px solid #2a2a2a",
+        background: "rgba(20,20,40,0.7)",
+        backdropFilter: "blur(16px)",
+        WebkitBackdropFilter: "blur(16px)",
+        border: "1px solid rgba(255,255,255,0.1)",
         borderRadius: "8px",
         padding: "10px 14px"
       }}>
@@ -107,7 +109,7 @@ export default function Dashboard() {
     <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
 
       {/* Page header */}
-      <div style={{ paddingBottom: "20px", borderBottom: "1px solid #1e1e1e" }}>
+      <div style={{ paddingBottom: "20px", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
         <p style={{ color: "#444", fontSize: "11px", letterSpacing: "0.08em", marginBottom: "6px" }}>
           {today.toUpperCase()}
         </p>
@@ -149,16 +151,19 @@ export default function Dashboard() {
             key={label}
             onClick={onClick}
             style={{
-              background: alert ? "rgba(245,166,35,0.06)" : "#1a1a1a",
+              background: alert ? "rgba(245,166,35,0.08)" : "rgba(255,255,255,0.04)",
+              backdropFilter: "blur(22px) saturate(160%)",
+              WebkitBackdropFilter: "blur(22px) saturate(160%)",
               borderRadius: "12px",
               padding: isMobile ? "14px 10px" : "24px 20px",
-              transition: "background 0.2s ease",
+              transition: "background 0.2s ease, border-color 0.2s ease",
               cursor: onClick ? "pointer" : "default",
-              border: alert ? "1px solid rgba(245,166,35,0.25)" : "1px solid #222",
+              border: alert ? "1px solid rgba(245,166,35,0.3)" : "1px solid rgba(255,255,255,0.09)",
+              boxShadow: "0 4px 24px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.07)",
               position: "relative",
             }}
-            onMouseEnter={e => e.currentTarget.style.background = alert ? "rgba(245,166,35,0.1)" : "#202020"}
-            onMouseLeave={e => e.currentTarget.style.background = alert ? "rgba(245,166,35,0.06)" : "#1a1a1a"}
+            onMouseEnter={e => e.currentTarget.style.background = alert ? "rgba(245,166,35,0.14)" : "rgba(255,255,255,0.08)"}
+            onMouseLeave={e => e.currentTarget.style.background = alert ? "rgba(245,166,35,0.08)" : "rgba(255,255,255,0.04)"}
           >
             <Icon size={isMobile ? 13 : 16} color={color} strokeWidth={1.8} style={{ marginBottom: isMobile ? "8px" : "16px", opacity: 0.8 }} />
             <div style={{
@@ -187,7 +192,7 @@ export default function Dashboard() {
       <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: "16px" }}>
 
         {/* Pipeline stages */}
-        <div style={{ background: "#1a1a1a", borderRadius: "12px", padding: "20px", border: "1px solid #222" }}>
+        <div style={{ background: "rgba(255,255,255,0.04)", backdropFilter: "blur(22px) saturate(160%)", WebkitBackdropFilter: "blur(22px) saturate(160%)", borderRadius: "12px", padding: "20px", border: "1px solid rgba(255,255,255,0.09)", boxShadow: "0 4px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.07)" }}>
           <h2 style={{
             fontSize: "11px", fontWeight: "600",
             color: "#444", letterSpacing: "0.08em",
@@ -205,7 +210,7 @@ export default function Dashboard() {
                   padding: "11px 12px", borderRadius: "8px",
                   transition: "background 0.15s", cursor: "default"
                 }}
-                onMouseEnter={e => e.currentTarget.style.background = "#222"}
+                onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.06)"}
                 onMouseLeave={e => e.currentTarget.style.background = "transparent"}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
@@ -230,7 +235,7 @@ export default function Dashboard() {
         </div>
 
         {/* Weekly trend chart */}
-        <div style={{ background: "#1a1a1a", borderRadius: "12px", padding: "20px", border: "1px solid #222" }}>
+        <div style={{ background: "rgba(255,255,255,0.04)", backdropFilter: "blur(22px) saturate(160%)", WebkitBackdropFilter: "blur(22px) saturate(160%)", borderRadius: "12px", padding: "20px", border: "1px solid rgba(255,255,255,0.09)", boxShadow: "0 4px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.07)" }}>
           <h2 style={{
             fontSize: "11px", fontWeight: "600",
             color: "#444", letterSpacing: "0.08em",
@@ -271,7 +276,7 @@ export default function Dashboard() {
       <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: "16px" }}>
 
         {/* Recent applications */}
-        <div style={{ background: "#1a1a1a", borderRadius: "12px", padding: "20px", border: "1px solid #222" }}>
+        <div style={{ background: "rgba(255,255,255,0.04)", backdropFilter: "blur(22px) saturate(160%)", WebkitBackdropFilter: "blur(22px) saturate(160%)", borderRadius: "12px", padding: "20px", border: "1px solid rgba(255,255,255,0.09)", boxShadow: "0 4px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.07)" }}>
           <div onClick={() => navigate("/applications")} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px", cursor: "pointer" }}
             onMouseEnter={e => e.currentTarget.querySelector("svg").style.color = "#58a6ff"}
             onMouseLeave={e => e.currentTarget.querySelector("svg").style.color = "#555"}>
@@ -294,7 +299,7 @@ export default function Dashboard() {
                   padding: "10px 12px", borderRadius: "8px",
                   transition: "background 0.15s", cursor: "default"
                 }}
-                onMouseEnter={e => e.currentTarget.style.background = "#222"}
+                onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.06)"}
                 onMouseLeave={e => e.currentTarget.style.background = "transparent"}
               >
                 <div>
@@ -312,7 +317,7 @@ export default function Dashboard() {
         </div>
 
         {/* Recent referrals */}
-        <div style={{ background: "#1a1a1a", borderRadius: "12px", padding: "20px", border: "1px solid #222" }}>
+        <div style={{ background: "rgba(255,255,255,0.04)", backdropFilter: "blur(22px) saturate(160%)", WebkitBackdropFilter: "blur(22px) saturate(160%)", borderRadius: "12px", padding: "20px", border: "1px solid rgba(255,255,255,0.09)", boxShadow: "0 4px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.07)" }}>
           <div onClick={() => navigate("/referrals")} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px", cursor: "pointer" }}
             onMouseEnter={e => e.currentTarget.querySelector("svg").style.color = "#58a6ff"}
             onMouseLeave={e => e.currentTarget.querySelector("svg").style.color = "#555"}>
@@ -335,7 +340,7 @@ export default function Dashboard() {
                   padding: "10px 12px", borderRadius: "8px",
                   transition: "background 0.15s", cursor: "default"
                 }}
-                onMouseEnter={e => e.currentTarget.style.background = "#222"}
+                onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.06)"}
                 onMouseLeave={e => e.currentTarget.style.background = "transparent"}
               >
                 <div>
