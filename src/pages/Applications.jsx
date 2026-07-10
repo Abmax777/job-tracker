@@ -53,20 +53,21 @@ function avatarColor(name = "") {
   return colors[Math.abs(hash) % colors.length]
 }
 
-function guessLogoUrl(company = "") {
-  const slug = company.toLowerCase()
+function guessDomain(company = "") {
+  return company.toLowerCase()
     .replace(/\(.*?\)/g, "")
+    .replace(/\b(private|pvt|limited|ltd|llc|inc|corp|corporation|co|group|systems|technologies|technology|solutions|services|india|global|software|labs|ventures)\b\.?/gi, " ")
     .replace(/[^a-z0-9]/g, "")
     .trim()
-  return `https://logo.clearbit.com/${slug}.com`
 }
 
 function CompanyLogo({ company }) {
   const [failed, setFailed] = useState(false)
   const initials = (company || "?").split(/[\s\-_]+/).map(w => w[0]).join("").slice(0, 2).toUpperCase()
   const color = avatarColor(company)
+  const domain = guessDomain(company)
 
-  if (failed) {
+  if (failed || !domain) {
     return (
       <div style={{
         width: 44, height: 44, borderRadius: "10px",
@@ -83,16 +84,16 @@ function CompanyLogo({ company }) {
   return (
     <div style={{
       width: 44, height: 44, borderRadius: "10px",
-      background: "#fff",
+      background: "#1e1e1e",
       display: "flex", alignItems: "center", justifyContent: "center",
       overflow: "hidden", flexShrink: 0,
       border: "1px solid #2a2a2a",
     }}>
       <img
-        src={guessLogoUrl(company)}
+        src={`https://www.google.com/s2/favicons?domain=${domain}.com&sz=64`}
         alt={company}
         onError={() => setFailed(true)}
-        style={{ width: 32, height: 32, objectFit: "contain" }}
+        style={{ width: 28, height: 28, objectFit: "contain", imageRendering: "auto" }}
       />
     </div>
   )
