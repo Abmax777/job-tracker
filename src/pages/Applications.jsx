@@ -4,15 +4,106 @@ import { useApp } from "../context/AppContext"
 import StatusBadge from "../components/StatusBadge"
 import { formatDate, APPLICATION_STATUSES, SOURCES, CV_TYPES } from "../services/sheetsService"
 
+/* ── Inject flip-card CSS once ─────────────────────────────────── */
+const FLIP_CSS = `
+  .app-flip-card { perspective: 1000px; }
+  .app-flip-inner {
+    position: relative; width: 100%; height: 100%;
+    transition: transform 0.52s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-style: preserve-3d;
+  }
+  .app-flip-card:hover .app-flip-inner { transform: rotateY(180deg); }
+  .app-flip-front, .app-flip-back {
+    position: absolute; inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .app-flip-front {
+    background: #1a1a1a;
+    border: 1px solid #222;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 10px;
+    transition: border-color 0.2s;
+  }
+  .app-flip-card:hover .app-flip-front { border-color: #333; }
+  .app-flip-back {
+    background: #161b22;
+    border: 1px solid #30363d;
+    transform: rotateY(180deg);
+    display: flex; flex-direction: column; justify-content: space-between;
+    padding: 14px;
+  }
+`
+
+/* ── Helpers ───────────────────────────────────────────────────── */
+const STATUS_COLORS = {
+  Applied:            { bg: "rgba(88,166,255,0.12)",  color: "#58a6ff"  },
+  "In Review":        { bg: "rgba(245,166,35,0.12)",  color: "#f5a623"  },
+  "Interview Scheduled": { bg: "rgba(188,140,255,0.12)", color: "#bc8cff" },
+  Rejected:           { bg: "rgba(248,81,73,0.12)",   color: "#f85149"  },
+  Offer:              { bg: "rgba(63,185,80,0.12)",   color: "#3fb950"  },
+}
+
+function avatarColor(name = "") {
+  const colors = ["#58a6ff","#3fb950","#f5a623","#bc8cff","#f85149","#79c0ff","#56d364","#ffa657"]
+  let hash = 0
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash)
+  return colors[Math.abs(hash) % colors.length]
+}
+
+function guessLogoUrl(company = "") {
+  const slug = company.toLowerCase()
+    .replace(/\(.*?\)/g, "")
+    .replace(/[^a-z0-9]/g, "")
+    .trim()
+  return `https://logo.clearbit.com/${slug}.com`
+}
+
+function CompanyLogo({ company }) {
+  const [failed, setFailed] = useState(false)
+  const initials = (company || "?").split(/[\s\-_]+/).map(w => w[0]).join("").slice(0, 2).toUpperCase()
+  const color = avatarColor(company)
+
+  if (failed) {
+    return (
+      <div style={{
+        width: 44, height: 44, borderRadius: "10px",
+        background: `${color}18`, border: `1.5px solid ${color}33`,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        fontSize: "15px", fontWeight: "800", color, flexShrink: 0,
+        letterSpacing: "-0.5px",
+      }}>
+        {initials}
+      </div>
+    )
+  }
+
+  return (
+    <div style={{
+      width: 44, height: 44, borderRadius: "10px",
+      background: "#fff",
+      display: "flex", alignItems: "center", justifyContent: "center",
+      overflow: "hidden", flexShrink: 0,
+      border: "1px solid #2a2a2a",
+    }}>
+      <img
+        src={guessLogoUrl(company)}
+        alt={company}
+        onError={() => setFailed(true)}
+        style={{ width: 32, height: 32, objectFit: "contain" }}
+      />
+    </div>
+  )
+}
+
+/* ── Styles ────────────────────────────────────────────────────── */
 const S = {
-  card:    { background: "#1a1a1a", border: "1px solid #222", borderRadius: "12px", padding: "20px" },
-  input:   { background: "#111", border: "1px solid #2a2a2a", borderRadius: "8px", color: "#e0e0e0", width: "100%", padding: "8px 12px", fontSize: "13px", outline: "none" },
-  select:  { background: "#111", border: "1px solid #2a2a2a", borderRadius: "8px", color: "#e0e0e0", width: "100%", padding: "8px 12px", fontSize: "13px", outline: "none" },
-  label:   { color: "#555", fontSize: "12px", fontWeight: "500", display: "block", marginBottom: "4px" },
-  th:      { color: "#444", fontSize: "11px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.06em", padding: "12px 16px", textAlign: "left", background: "#111", borderBottom: "1px solid #1e1e1e" },
-  td:      { padding: "12px 16px", fontSize: "13px", color: "#e0e0e0", borderBottom: "1px solid #1a1a1a" },
-  tdMuted: { padding: "12px 16px", fontSize: "13px", color: "#555", borderBottom: "1px solid #1a1a1a" },
-  modal:   { background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: "16px", width: "100%", maxWidth: "520px", maxHeight: "90vh", overflowY: "auto", padding: "24px" },
+  input:  { background: "#111", border: "1px solid #2a2a2a", borderRadius: "8px", color: "#e0e0e0", width: "100%", padding: "8px 12px", fontSize: "13px", outline: "none" },
+  select: { background: "#111", border: "1px solid #2a2a2a", borderRadius: "8px", color: "#e0e0e0", width: "100%", padding: "8px 12px", fontSize: "13px", outline: "none" },
+  label:  { color: "#555", fontSize: "12px", fontWeight: "500", display: "block", marginBottom: "4px" },
+  modal:  { background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: "16px", width: "100%", maxWidth: "520px", maxHeight: "90vh", overflowY: "auto", padding: "24px" },
 }
 
 const EMPTY_FORM = {
@@ -22,43 +113,42 @@ const EMPTY_FORM = {
   salaryExpected: "", notes: ""
 }
 
+/* ── Main component ────────────────────────────────────────────── */
 export default function Applications() {
   const { applications, addApplication, updateApplication, deleteApplication, loading } = useApp()
   const isMobile = useIsMobile()
-  const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState(EMPTY_FORM)
-  const [editing, setEditing] = useState(null)
+  const [showForm, setShowForm]       = useState(false)
+  const [form, setForm]               = useState(EMPTY_FORM)
+  const [editing, setEditing]         = useState(null)
   const [filterStatus, setFilterStatus] = useState("All")
   const [filterSource, setFilterSource] = useState("All")
-  const [search, setSearch] = useState("")
-  const [sortBy, setSortBy] = useState("date-desc")
-  const [saving, setSaving] = useState(false)
+  const [search, setSearch]           = useState("")
+  const [sortBy, setSortBy]           = useState("date-desc")
+  const [saving, setSaving]           = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(null)
 
+  /* filter + sort */
   const filtered = applications.filter(app => {
-  const statusMatch = filterStatus === "All" || app.Status === filterStatus
-  const sourceMatch = filterSource === "All" || app.Source === filterSource
-  const q = search.trim().toLowerCase()
-  const searchMatch = !q ||
-    (app.Company || "").toLowerCase().includes(q) ||
-    (app.Role || "").toLowerCase().includes(q)
-  return statusMatch && sourceMatch && searchMatch
-})
+    const statusMatch = filterStatus === "All" || app.Status === filterStatus
+    const sourceMatch = filterSource === "All" || app.Source === filterSource
+    const q = search.trim().toLowerCase()
+    const searchMatch = !q ||
+      (app.Company || "").toLowerCase().includes(q) ||
+      (app.Role || "").toLowerCase().includes(q)
+    return statusMatch && sourceMatch && searchMatch
+  })
 
-const dateVal = app => {
-  const d = new Date(app["Date Applied"])
-  return isNaN(d) ? 0 : d.getTime()
-}
+  const dateVal = app => { const d = new Date(app["Date Applied"]); return isNaN(d) ? 0 : d.getTime() }
 
-const sorted = [...filtered].sort((a, b) => {
-  switch (sortBy) {
-    case "date-asc":   return dateVal(a) - dateVal(b)
-    case "company-az": return (a.Company || "").localeCompare(b.Company || "")
-    case "company-za": return (b.Company || "").localeCompare(a.Company || "")
-    case "status":     return (a.Status || "").localeCompare(b.Status || "")
-    default:           return dateVal(b) - dateVal(a)  // newest first
-  }
-})
+  const sorted = [...filtered].sort((a, b) => {
+    switch (sortBy) {
+      case "date-asc":   return dateVal(a) - dateVal(b)
+      case "company-az": return (a.Company || "").localeCompare(b.Company || "")
+      case "company-za": return (b.Company || "").localeCompare(a.Company || "")
+      case "status":     return (a.Status || "").localeCompare(b.Status || "")
+      default:           return dateVal(b) - dateVal(a)
+    }
+  })
 
   useEffect(() => {
     if (!showForm) return
@@ -67,8 +157,7 @@ const sorted = [...filtered].sort((a, b) => {
     return () => window.removeEventListener("keydown", handler)
   }, [showForm])
 
-  function openAdd() { setForm(EMPTY_FORM); setEditing(null); setShowForm(true) }
-
+  function openAdd()  { setForm(EMPTY_FORM); setEditing(null); setShowForm(true) }
   function openEdit(app) {
     setForm({
       company: app.Company, role: app.Role, source: app.Source,
@@ -77,7 +166,6 @@ const sorted = [...filtered].sort((a, b) => {
     })
     setEditing(app); setShowForm(true)
   }
-
   function closeForm() { setShowForm(false); setEditing(null); setForm(EMPTY_FORM) }
 
   async function handleSubmit(e) {
@@ -106,15 +194,20 @@ const sorted = [...filtered].sort((a, b) => {
     </div>
   )
 
+  const CARD_H = isMobile ? 148 : 160
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+
+      {/* Inject flip CSS */}
+      <style>{FLIP_CSS}</style>
 
       {/* Header */}
       <div style={{ paddingBottom: "20px", borderBottom: "1px solid #1e1e1e", display: "flex", alignItems: isMobile ? "center" : "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}>
         <div>
           <h1 style={{ fontSize: isMobile ? "22px" : "30px", fontWeight: "800", color: "#ffffff", margin: 0, letterSpacing: "-0.5px" }}>Applications</h1>
           <p style={{ color: "#555", fontSize: "13px", marginTop: "6px" }}>
-            {filtered.length} of {applications.length} shown
+            {sorted.length} of {applications.length} shown · hover a card to see details
           </p>
         </div>
         <button onClick={openAdd} style={{
@@ -126,7 +219,7 @@ const sorted = [...filtered].sort((a, b) => {
         </button>
       </div>
 
-      {/* Unified filter bar */}
+      {/* Filter bar */}
       <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "center" }}>
         <input
           style={{ ...S.input, maxWidth: "220px" }}
@@ -162,60 +255,125 @@ const sorted = [...filtered].sort((a, b) => {
         </span>
       </div>
 
-      {/* Table */}
-      <div style={{ background: "#1a1a1a", border: "1px solid #222", borderRadius: "12px", overflow: "hidden" }}>
-        {filtered.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "60px 20px" }}>
-            <div style={{ fontSize: "32px", marginBottom: "12px" }}>📋</div>
-            <p style={{ color: "#e0e0e0", fontWeight: "600", fontSize: "14px" }}>No applications yet</p>
-            <p style={{ color: "#555", fontSize: "13px", marginTop: "4px" }}>Click "Add Application" to get started</p>
-          </div>
-        ) : (
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead>
-                <tr>
-                  {["Company", "Role", "Source", "Date", "Status", "CV Used", "Salary", "Actions"].map(h => (
-                    <th key={h} style={S.th}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {sorted.map((app, i) => (
-                  <tr key={i}
-                    onClick={() => openEdit(app)}
-                    onMouseEnter={e => e.currentTarget.style.background = "#1e1e1e"}
-                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                    style={{ transition: "background 0.15s", cursor: "pointer" }}
-                  >
-                    <td style={{ ...S.td, fontWeight: "600" }}>{app.Company}</td>
-                    <td style={S.tdMuted}>{app.Role}</td>
-                    <td style={S.tdMuted}>{app.Source}</td>
-                    <td style={S.tdMuted}>{formatDate(app["Date Applied"])}</td>
-                    <td style={S.td}><StatusBadge status={app.Status} /></td>
-                    <td style={S.tdMuted}>{app["CV Used"]}</td>
-                    <td style={S.tdMuted}>{app["Salary Expected"] || "--"}</td>
-                    <td style={{ ...S.td }} onClick={e => e.stopPropagation()}>
-                      {confirmDelete === app._rowIndex ? (
-                        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                          <span style={{ fontSize: "11px", color: "#888" }}>Sure?</span>
-                          <button onClick={() => handleDelete(app)} style={{ background: "none", border: "none", color: "#f85149", fontSize: "12px", cursor: "pointer", fontWeight: "700" }}>Yes</button>
-                          <button onClick={() => setConfirmDelete(null)} style={{ background: "none", border: "none", color: "#555", fontSize: "12px", cursor: "pointer" }}>No</button>
-                        </div>
-                      ) : (
-                        <div style={{ display: "flex", gap: "12px" }}>
-                          <button onClick={() => openEdit(app)} style={{ background: "none", border: "none", color: "#58a6ff", fontSize: "12px", cursor: "pointer", fontWeight: "600" }}>Edit</button>
-                          <button onClick={() => setConfirmDelete(app._rowIndex)} style={{ background: "none", border: "none", color: "#f85149", fontSize: "12px", cursor: "pointer", fontWeight: "600" }}>Delete</button>
+      {/* Cards grid */}
+      {filtered.length === 0 ? (
+        <div style={{ textAlign: "center", padding: "60px 20px", background: "#1a1a1a", borderRadius: "12px", border: "1px solid #222" }}>
+          <div style={{ fontSize: "32px", marginBottom: "12px" }}>📋</div>
+          <p style={{ color: "#e0e0e0", fontWeight: "600", fontSize: "14px" }}>No applications found</p>
+          <p style={{ color: "#555", fontSize: "13px", marginTop: "4px" }}>Try adjusting your filters or add a new application</p>
+        </div>
+      ) : (
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(auto-fill, minmax(170px, 1fr))",
+          gap: isMobile ? "10px" : "12px",
+        }}>
+          {sorted.map((app, i) => {
+            const sc = STATUS_COLORS[app.Status] || STATUS_COLORS["Applied"]
+            const isConfirming = confirmDelete === app._rowIndex
+
+            return (
+              <div
+                key={i}
+                className="app-flip-card"
+                style={{ height: CARD_H }}
+              >
+                <div className="app-flip-inner">
+
+                  {/* ── Front ─────────────────────────────── */}
+                  <div className="app-flip-front">
+                    <CompanyLogo company={app.Company} />
+                    <div style={{ textAlign: "center", width: "100%", padding: "0 8px" }}>
+                      <div style={{
+                        fontSize: "13px", fontWeight: "700", color: "#e0e0e0",
+                        whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+                        marginBottom: "6px",
+                      }}>
+                        {app.Company || "—"}
+                      </div>
+                      <span style={{
+                        fontSize: "10px", fontWeight: "700", padding: "3px 9px",
+                        borderRadius: "999px", background: sc.bg, color: sc.color,
+                        letterSpacing: "0.03em",
+                      }}>
+                        {app.Status}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* ── Back ──────────────────────────────── */}
+                  <div className="app-flip-back">
+                    {/* Role */}
+                    <div>
+                      <div style={{ fontSize: "11px", color: "#555", fontWeight: "600", letterSpacing: "0.05em", marginBottom: "3px" }}>ROLE</div>
+                      <div style={{
+                        fontSize: "12px", color: "#e0e0e0", fontWeight: "600",
+                        display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
+                        overflow: "hidden", lineHeight: "1.4",
+                      }}>
+                        {app.Role || "—"}
+                      </div>
+                    </div>
+
+                    {/* Meta grid */}
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 10px", margin: "8px 0" }}>
+                      <div>
+                        <div style={{ fontSize: "10px", color: "#444", marginBottom: "2px" }}>DATE</div>
+                        <div style={{ fontSize: "11px", color: "#888" }}>{formatDate(app["Date Applied"])}</div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: "10px", color: "#444", marginBottom: "2px" }}>SOURCE</div>
+                        <div style={{ fontSize: "11px", color: "#888", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{app.Source || "—"}</div>
+                      </div>
+                      {app["CV Used"] && (
+                        <div style={{ gridColumn: "1 / -1" }}>
+                          <div style={{ fontSize: "10px", color: "#444", marginBottom: "2px" }}>CV</div>
+                          <div style={{ fontSize: "11px", color: "#888" }}>{app["CV Used"]}</div>
                         </div>
                       )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+                      {app["Salary Expected"] && (
+                        <div style={{ gridColumn: "1 / -1" }}>
+                          <div style={{ fontSize: "10px", color: "#444", marginBottom: "2px" }}>SALARY</div>
+                          <div style={{ fontSize: "11px", color: "#3fb950" }}>{app["Salary Expected"]}</div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Actions */}
+                    <div style={{ borderTop: "1px solid #21262d", paddingTop: "8px" }}>
+                      {isConfirming ? (
+                        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                          <span style={{ fontSize: "11px", color: "#888", flex: 1 }}>Delete?</span>
+                          <button
+                            onClick={e => { e.stopPropagation(); handleDelete(app) }}
+                            style={{ background: "none", border: "none", color: "#f85149", fontSize: "12px", cursor: "pointer", fontWeight: "700", padding: "2px 4px" }}
+                          >Yes</button>
+                          <button
+                            onClick={e => { e.stopPropagation(); setConfirmDelete(null) }}
+                            style={{ background: "none", border: "none", color: "#555", fontSize: "12px", cursor: "pointer", padding: "2px 4px" }}
+                          >No</button>
+                        </div>
+                      ) : (
+                        <div style={{ display: "flex", gap: "8px" }}>
+                          <button
+                            onClick={e => { e.stopPropagation(); openEdit(app) }}
+                            style={{ flex: 1, background: "rgba(88,166,255,0.1)", border: "none", color: "#58a6ff", fontSize: "11px", cursor: "pointer", fontWeight: "700", borderRadius: "6px", padding: "5px 0" }}
+                          >Edit</button>
+                          <button
+                            onClick={e => { e.stopPropagation(); setConfirmDelete(app._rowIndex) }}
+                            style={{ flex: 1, background: "rgba(248,81,73,0.1)", border: "none", color: "#f85149", fontSize: "11px", cursor: "pointer", fontWeight: "700", borderRadius: "6px", padding: "5px 0" }}
+                          >Delete</button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
 
       {/* Modal */}
       {showForm && (
