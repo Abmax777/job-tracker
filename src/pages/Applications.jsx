@@ -171,7 +171,7 @@ export default function Applications() {
     </div>
   )
 
-  const CARD_H = isMobile ? 168 : 160
+  const CARD_H = isMobile ? 180 : 200
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
@@ -239,7 +239,7 @@ export default function Applications() {
       ) : (
         <div style={{
           display: "grid",
-          gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(auto-fill, minmax(170px, 1fr))",
+          gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(auto-fill, minmax(220px, 1fr))",
           gap: isMobile ? "10px" : "12px",
         }}>
           {sorted.map((app, i) => {
@@ -274,10 +274,24 @@ export default function Applications() {
                         {app.Status}
                       </span>
                     </div>
+                    {isMobile && (
+                      <div style={{ fontSize: "9px", color: "rgba(255,255,255,0.2)", letterSpacing: "0.05em" }}>
+                        TAP TO FLIP
+                      </div>
+                    )}
                   </div>
 
                   {/* ── Back ──────────────────────────────── */}
-                  <div className="app-flip-back">
+                  <div className="app-flip-back" style={{ position: "relative" }}>
+                    {/* Flip-back hint — mobile only */}
+                    {isMobile && (
+                      <div style={{
+                        position: "absolute", top: "10px", right: "10px",
+                        fontSize: "14px", opacity: 0.2, pointerEvents: "none",
+                        transform: "scaleX(-1)",
+                      }}>↩</div>
+                    )}
+
                     {/* Role */}
                     <div>
                       <div style={{ fontSize: "11px", color: "#555", fontWeight: "600", letterSpacing: "0.05em", marginBottom: "3px" }}>ROLE</div>
@@ -290,32 +304,30 @@ export default function Applications() {
                       </div>
                     </div>
 
-                    {/* Meta grid */}
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 10px", margin: "8px 0" }}>
-                      <div>
-                        <div style={{ fontSize: "10px", color: "#444", marginBottom: "2px" }}>DATE</div>
-                        <div style={{ fontSize: "11px", color: "#888" }}>{formatDate(app["Date Applied"])}</div>
-                      </div>
-                      <div>
-                        <div style={{ fontSize: "10px", color: "#444", marginBottom: "2px" }}>SOURCE</div>
-                        <div style={{ fontSize: "11px", color: "#888", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{app.Source || "—"}</div>
-                      </div>
+                    {/* Meta — wrapping chips */}
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "5px", margin: "8px 0" }}>
+                      <span style={{ fontSize: "10px", color: "#888", background: "rgba(255,255,255,0.06)", borderRadius: "5px", padding: "2px 7px" }}>
+                        {formatDate(app["Date Applied"])}
+                      </span>
+                      {app.Source && (
+                        <span style={{ fontSize: "10px", color: "#888", background: "rgba(255,255,255,0.06)", borderRadius: "5px", padding: "2px 7px" }}>
+                          {app.Source}
+                        </span>
+                      )}
                       {app["CV Used"] && (
-                        <div style={{ gridColumn: "1 / -1" }}>
-                          <div style={{ fontSize: "10px", color: "#444", marginBottom: "2px" }}>CV</div>
-                          <div style={{ fontSize: "11px", color: "#888" }}>{app["CV Used"]}</div>
-                        </div>
+                        <span style={{ fontSize: "10px", color: "#888", background: "rgba(255,255,255,0.06)", borderRadius: "5px", padding: "2px 7px" }}>
+                          {app["CV Used"]}
+                        </span>
                       )}
                       {app["Salary Expected"] && (
-                        <div style={{ gridColumn: "1 / -1" }}>
-                          <div style={{ fontSize: "10px", color: "#444", marginBottom: "2px" }}>SALARY</div>
-                          <div style={{ fontSize: "11px", color: "#3fb950" }}>{app["Salary Expected"]}</div>
-                        </div>
+                        <span style={{ fontSize: "10px", color: "#3fb950", background: "rgba(63,185,80,0.1)", borderRadius: "5px", padding: "2px 7px" }}>
+                          {app["Salary Expected"]}
+                        </span>
                       )}
                     </div>
 
                     {/* Actions */}
-                    <div style={{ borderTop: "1px solid #21262d", paddingTop: "8px" }}>
+                    <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: "8px" }}>
                       {isConfirming ? (
                         <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
                           <span style={{ fontSize: "11px", color: "#888", flex: 1 }}>Delete?</span>

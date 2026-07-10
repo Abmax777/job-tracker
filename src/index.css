@@ -150,12 +150,7 @@ a { text-decoration: none; }
   align-items: center; justify-content: center; gap: 10px;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
-/* Back face: allow scrolling for long content */
-.app-flip-back {
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-}
+/* Back face */
 .app-flip-back {
   background: rgba(10,10,24,0.75);
   backdrop-filter: var(--glass-blur-sm);
@@ -165,6 +160,9 @@ a { text-decoration: none; }
   transform: rotateY(180deg);
   display: flex; flex-direction: column; justify-content: space-between;
   padding: 14px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 @keyframes spin {
