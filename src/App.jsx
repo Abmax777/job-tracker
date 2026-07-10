@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard"
 import Applications from "./pages/Applications"
 import Referrals from "./pages/Referrals"
 import Interviews from "./pages/Interviews"
+import JDAnalyzer from "./pages/JDAnalyzer"
 import { useIsMobile } from "./hooks/useIsMobile"
 
 function Layout({ children }) {
@@ -29,7 +30,7 @@ function Layout({ children }) {
 export default function App() {
   return (
     <AppProvider>
-      <BrowserRouter basename={import.meta.env.DEV ? "/" : "/job-tracker/"}>
+      <BrowserRouter basename="/">
         <Layout>
           <Routes>
             <Route path="/" element={<Navigate to="dashboard" replace />} />
@@ -37,6 +38,7 @@ export default function App() {
             <Route path="/applications" element={<Applications />} />
             <Route path="/referrals" element={<Referrals />} />
             <Route path="/interviews" element={<Interviews />} />
+            <Route path="/jd-analyzer" element={<JDAnalyzer />} />
           </Routes>
         </Layout>
         <Toaster

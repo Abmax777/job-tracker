@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom"
 import { useApp } from "../context/AppContext"
-import { LayoutDashboard, FileText, Users, Calendar, TrendingUp, RefreshCw } from "lucide-react"
+import { LayoutDashboard, FileText, Users, Calendar, TrendingUp, RefreshCw, Sparkles } from "lucide-react"
 import { useState } from "react"
 import { useIsMobile } from "../hooks/useIsMobile"
 
@@ -146,6 +146,28 @@ export default function Sidebar() {
           ))}
         </div>
       </nav>
+
+      {/* Tools */}
+      <div style={{ padding: "0 12px 12px" }}>
+        <div style={{ fontSize: "10px", fontWeight: "600", color: "#444", letterSpacing: "0.08em", padding: "0 8px", marginBottom: "8px" }}>
+          TOOLS
+        </div>
+        <NavLink
+          to="/jd-analyzer"
+          style={({ isActive }) => ({
+            display: "flex", alignItems: "center", gap: "10px",
+            padding: "9px 10px", borderRadius: "6px", textDecoration: "none",
+            transition: "all 0.15s ease",
+            background: isActive ? "#1a1a1a" : "transparent",
+            color: isActive ? "#ffffff" : "#666",
+          })}
+          onMouseEnter={e => { if (!e.currentTarget.getAttribute("aria-current")) { e.currentTarget.style.color = "#aaa"; e.currentTarget.style.background = "#111" } }}
+          onMouseLeave={e => { if (!e.currentTarget.getAttribute("aria-current")) { e.currentTarget.style.color = "#666"; e.currentTarget.style.background = "transparent" } }}
+        >
+          <Sparkles size={16} strokeWidth={1.8} />
+          <span style={{ fontSize: "13px", fontWeight: "500" }}>JD Analyzer</span>
+        </NavLink>
+      </div>
 
       {/* Bottom stats */}
       <div style={{ padding: "16px 12px", borderTop: "1px solid #1a1a1a" }}>
