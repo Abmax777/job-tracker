@@ -38,7 +38,10 @@ export default function Interviews() {
   const [saving, setSaving] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(null)
 
-  const companies = [...new Set(applications.map(a => a.Company))].sort()
+  const companies = [...new Set([
+    ...applications.map(a => a.Company),
+    ...interviews.map(i => i.Company),
+  ].filter(Boolean))].sort()
 
   const filtered = interviews.filter(i => {
     const outcomeMatch = filterOutcome === "All" || i.Outcome === filterOutcome
