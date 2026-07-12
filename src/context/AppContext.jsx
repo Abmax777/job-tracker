@@ -26,31 +26,7 @@ export function AppProvider({ children }) {
   async function loadAllData() {
     setLoading(true)
     try {
-      const [apps, refs, ints, items] = await Promise.all([
-        getSheetData(SHEETS.APPLICATIONS),
-        getSheetData(SHEETS.REFERRALS),
-        getSheetData(SHEETS.INTERVIEWS),
-        getSheetData(SHEETS.ACTION_ITEMS),
-      ])
-      setApplications(apps)
-      setReferrals(refs)
-      setInterviews(ints)
-      // Only show undismissed items; auto-hide if deadline passed > 1 day ago
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
-      const yesterday = new Date(today)
-      yesterday.setDate(today.getDate() - 1)
-      setActionItems(
-        (items || []).filter(item => {
-          if (item.Dismissed === "true") return false
-          if (item.Deadline) {
-            const d = new Date(item.Deadline)
-            d.setHours(0, 0, 0, 0)
-            if (d < yesterday) return false  // expired > 1 day ago
-          }
-          return true
-        })
-      )
+      await _fetchAndSet()
     } catch (err) {
       toast.error("Failed to load data")
     } finally {
@@ -58,28 +34,51 @@ export function AppProvider({ children }) {
     }
   }
 
+  // Silent reload — refreshes row indices in background without showing spinner
+  async function _fetchAndSet() {
+    const [apps, refs, ints, items] = await Promise.all([
+      getSheetData(SHEETS.APPLICATIONS),
+      getSheetData(SHEETS.REFERRALS),
+      getSheetData(SHEETS.INTERVIEWS),
+      getSheetData(SHEETS.ACTION_ITEMS),
+    ])
+    setApplications(apps)
+    setReferrals(refs)
+    setInterviews(ints)
+    const today = new Date(); today.setHours(0, 0, 0, 0)
+    const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1)
+    setActionItems(
+      (items || []).filter(item => {
+        if (item.Dismissed === "true") return false
+        if (item.Deadline) {
+          const d = new Date(item.Deadline); d.setHours(0, 0, 0, 0)
+          if (d < yesterday) return false
+        }
+        return true
+      })
+    )
+  }
+
   // ── Applications CRUD ───────────────────────────────────────────
   async function addApplication(data) {
     const id = generateId()
     const today = new Date().toISOString().split("T")[0]
     const row = [
-      id,
-      data.company,
-      data.role,
-      data.source,
-      data.dateApplied || today,
-      data.status || "Applied",
-      data.cvUsed || "",
-      data.salaryExpected || "",
-      data.notes || "",
-      today
+      id, data.company, data.role, data.source,
+      data.dateApplied || today, data.status || "Applied",
+      data.cvUsed || "", data.salaryExpected || "", data.notes || "", today
     ]
+    // Optimistic: add with temp index, reload silently to get real index
+    const tempItem = { _rowIndex: -1, ID: id, Company: data.company, Role: data.role,
+      Source: data.source, "Date Applied": data.dateApplied || today,
+      Status: data.status || "Applied", "CV Used": data.cvUsed || "",
+      "Salary Expected": data.salaryExpected || "", Notes: data.notes || "" }
+    setApplications(prev => [tempItem, ...prev])
+    toast.success("Application added!")
     const success = await appendRow(SHEETS.APPLICATIONS, row)
-    if (success) {
-      await loadAllData()
-      toast.success("Application added!")
-    } else {
-      toast.error("Failed to add application")
+    if (success) { _fetchAndSet() } else {
+      setApplications(prev => prev.filter(a => a._rowIndex !== -1))
+      toast.error("Failed to add — please try again")
     }
     return success
   }
@@ -87,34 +86,33 @@ export function AppProvider({ children }) {
   async function updateApplication(rowIndex, data) {
     const today = new Date().toISOString().split("T")[0]
     const row = [
-      data.ID,
-      data.Company,
-      data.Role,
-      data.Source,
-      data["Date Applied"],
-      data.Status,
-      data["CV Used"],
-      data["Salary Expected"],
-      data.Notes,
-      today
+      data.ID, data.Company, data.Role, data.Source, data["Date Applied"],
+      data.Status, data["CV Used"], data["Salary Expected"], data.Notes, today
     ]
+    // Optimistic: update local state immediately
+    setApplications(prev => prev.map(a =>
+      a._rowIndex === rowIndex ? { ...a, ...data, _rowIndex: rowIndex } : a
+    ))
+    toast.success("Application updated!")
     const success = await updateRow(SHEETS.APPLICATIONS, rowIndex, row)
-    if (success) {
-      await loadAllData()
-      toast.success("Application updated!")
-    } else {
-      toast.error("Failed to update")
+    if (!success) {
+      toast.error("Failed to save — refreshing")
+      _fetchAndSet()
     }
     return success
   }
 
   async function deleteApplication(rowIndex) {
+    // Optimistic: remove immediately
+    const removed = applications.find(a => a._rowIndex === rowIndex)
+    setApplications(prev => prev.filter(a => a._rowIndex !== rowIndex))
+    toast.success("Application deleted")
     const success = await deleteRow(SHEETS.APPLICATIONS, rowIndex)
     if (success) {
-      await loadAllData()
-      toast.success("Application deleted")
+      _fetchAndSet()  // silent reload to fix shifted row indices
     } else {
-      toast.error("Failed to delete")
+      setApplications(prev => [...prev, removed].sort((a, b) => a._rowIndex - b._rowIndex))
+      toast.error("Failed to delete — restored")
     }
     return success
   }
@@ -126,57 +124,47 @@ export function AppProvider({ children }) {
     const followUpDate = new Date()
     followUpDate.setDate(followUpDate.getDate() + 3)
     const row = [
-      id,
-      data.company,
-      data.personName,
-      data.personRole,
-      data.platform,
-      today,
-      data.response || "Pending",
-      data.referralGiven || "No",
-      data.notes || "",
-      followUpDate.toISOString().split("T")[0]
+      id, data.company, data.personName, data.personRole, data.platform,
+      today, data.response || "Pending", data.referralGiven || "No",
+      data.notes || "", followUpDate.toISOString().split("T")[0]
     ]
+    const tempItem = { _rowIndex: -1, ID: id, Company: data.company,
+      "Person Name": data.personName, "Person Role": data.personRole,
+      Platform: data.platform, "Date Sent": today, Response: data.response || "Pending",
+      "Referral Given": data.referralGiven || "No", Notes: data.notes || "" }
+    setReferrals(prev => [tempItem, ...prev])
+    toast.success("Referral logged!")
     const success = await appendRow(SHEETS.REFERRALS, row)
-    if (success) {
-      await loadAllData()
-      toast.success("Referral logged!")
-    } else {
-      toast.error("Failed to log referral")
+    if (success) { _fetchAndSet() } else {
+      setReferrals(prev => prev.filter(r => r._rowIndex !== -1))
+      toast.error("Failed to log — please try again")
     }
     return success
   }
 
   async function updateReferral(rowIndex, data) {
     const row = [
-      data.ID,
-      data.Company,
-      data["Person Name"],
-      data["Person Role"],
-      data.Platform,
-      data["Date Sent"],
-      data.Response,
-      data["Referral Given"],
-      data.Notes,
-      data["Follow Up Date"]
+      data.ID, data.Company, data["Person Name"], data["Person Role"],
+      data.Platform, data["Date Sent"], data.Response, data["Referral Given"],
+      data.Notes, data["Follow Up Date"]
     ]
+    setReferrals(prev => prev.map(r =>
+      r._rowIndex === rowIndex ? { ...r, ...data, _rowIndex: rowIndex } : r
+    ))
+    toast.success("Referral updated!")
     const success = await updateRow(SHEETS.REFERRALS, rowIndex, row)
-    if (success) {
-      await loadAllData()
-      toast.success("Referral updated!")
-    } else {
-      toast.error("Failed to update")
-    }
+    if (!success) { toast.error("Failed to save — refreshing"); _fetchAndSet() }
     return success
   }
 
   async function deleteReferral(rowIndex) {
+    const removed = referrals.find(r => r._rowIndex === rowIndex)
+    setReferrals(prev => prev.filter(r => r._rowIndex !== rowIndex))
+    toast.success("Referral deleted")
     const success = await deleteRow(SHEETS.REFERRALS, rowIndex)
-    if (success) {
-      await loadAllData()
-      toast.success("Referral deleted")
-    } else {
-      toast.error("Failed to delete")
+    if (success) { _fetchAndSet() } else {
+      setReferrals(prev => [...prev, removed].sort((a, b) => a._rowIndex - b._rowIndex))
+      toast.error("Failed to delete — restored")
     }
     return success
   }
@@ -185,80 +173,61 @@ export function AppProvider({ children }) {
   async function addInterview(data) {
     const id = generateId()
     const row = [
-      id,
-      data.company,
-      data.round,
-      data.type,
-      data.date,
-      data.outcome || "Pending",
-      data.notes || "",
-      data.time || "",
-      data.meetingLink || ""
+      id, data.company, data.round, data.type, data.date,
+      data.outcome || "Pending", data.notes || "", data.time || "", data.meetingLink || ""
     ]
+    const tempItem = { _rowIndex: -1, ID: id, Company: data.company, Round: data.round,
+      Type: data.type, Date: data.date, Outcome: data.outcome || "Pending",
+      Notes: data.notes || "", Time: data.time || "", "Meeting Link": data.meetingLink || "" }
+    setInterviews(prev => [tempItem, ...prev])
+    toast.success("Interview logged!")
     const success = await appendRow(SHEETS.INTERVIEWS, row)
-    if (success) {
-      await loadAllData()
-      toast.success("Interview logged!")
-    } else {
-      toast.error("Failed to log interview")
+    if (success) { _fetchAndSet() } else {
+      setInterviews(prev => prev.filter(i => i._rowIndex !== -1))
+      toast.error("Failed to log — please try again")
     }
     return success
   }
 
   async function updateInterview(rowIndex, data) {
     const row = [
-      data.ID,
-      data.Company,
-      data.Round,
-      data.Type,
-      data.Date,
-      data.Outcome,
-      data.Notes,
-      data.Time || "",
-      data["Meeting Link"] || ""
+      data.ID, data.Company, data.Round, data.Type, data.Date,
+      data.Outcome, data.Notes, data.Time || "", data["Meeting Link"] || ""
     ]
+    setInterviews(prev => prev.map(i =>
+      i._rowIndex === rowIndex ? { ...i, ...data, _rowIndex: rowIndex } : i
+    ))
+    toast.success("Interview updated!")
     const success = await updateRow(SHEETS.INTERVIEWS, rowIndex, row)
-    if (success) {
-      await loadAllData()
-      toast.success("Interview updated!")
-    } else {
-      toast.error("Failed to update")
-    }
+    if (!success) { toast.error("Failed to save — refreshing"); _fetchAndSet() }
     return success
   }
 
   async function deleteInterview(rowIndex) {
+    const removed = interviews.find(i => i._rowIndex === rowIndex)
+    setInterviews(prev => prev.filter(i => i._rowIndex !== rowIndex))
+    toast.success("Interview deleted")
     const success = await deleteRow(SHEETS.INTERVIEWS, rowIndex)
-    if (success) {
-      await loadAllData()
-      toast.success("Interview deleted")
-    } else {
-      toast.error("Failed to delete")
+    if (success) { _fetchAndSet() } else {
+      setInterviews(prev => [...prev, removed].sort((a, b) => a._rowIndex - b._rowIndex))
+      toast.error("Failed to delete — restored")
     }
     return success
   }
 
   // ── Action items ────────────────────────────────────────────────
   async function dismissActionItem(item) {
-    // Reconstruct the full row with Dismissed = "true" (column order matches sheet headers)
+    // Optimistic: remove immediately
+    setActionItems(prev => prev.filter(i => i._rowIndex !== item._rowIndex))
+    toast.success("Marked as done!")
     const row = [
-      item.ID,
-      item.Type,
-      item.Company,
-      item.Role,
-      item.Subject,
-      item.Deadline,
-      item.Link,
-      item["Email Date"],
-      "true",               // Dismissed
-      item["Message ID"],
+      item.ID, item.Type, item.Company, item.Role, item.Subject,
+      item.Deadline, item.Link, item["Email Date"], "true", item["Message ID"],
     ]
     const success = await updateRow(SHEETS.ACTION_ITEMS, item._rowIndex, row)
-    if (success) {
-      setActionItems(prev => prev.filter(i => i._rowIndex !== item._rowIndex))
-      toast.success("Marked as done!")
-    } else {
-      toast.error("Failed to dismiss item")
+    if (!success) {
+      setActionItems(prev => [...prev, item])
+      toast.error("Failed to sync — please try again")
     }
   }
 
