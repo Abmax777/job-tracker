@@ -34,13 +34,16 @@ export default function Sidebar() {
   if (isMobile) {
     return (
       <nav style={{
-        position: "fixed", bottom: 0, left: 0, right: 0, height: "60px",
+        position: "fixed", bottom: 0, left: 0, right: 0,
+        height: "calc(60px + env(safe-area-inset-bottom))",
         background: "rgba(6,6,15,0.72)",
         backdropFilter: "blur(30px) saturate(160%)",
         WebkitBackdropFilter: "blur(30px) saturate(160%)",
         borderTop: "1px solid rgba(255,255,255,0.08)",
-        display: "flex", alignItems: "center", justifyContent: "space-around",
-        zIndex: 40, paddingBottom: "env(safe-area-inset-bottom)",
+        display: "flex", alignItems: "flex-start", justifyContent: "space-around",
+        paddingTop: "10px",
+        paddingBottom: "env(safe-area-inset-bottom)",
+        zIndex: 40,
       }}>
         {NAV_ITEMS.map(({ to, icon: Icon, label }) => (
           <NavLink

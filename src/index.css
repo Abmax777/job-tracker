@@ -2,6 +2,10 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* Prevent mobile browser toolbar resize from causing layout jumps */
+html { height: -webkit-fill-available; }
+body { min-height: -webkit-fill-available; }
+
 :root {
   --glass-bg:      rgba(255, 255, 255, 0.05);
   --glass-bg-mid:  rgba(255, 255, 255, 0.08);
