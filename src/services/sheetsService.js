@@ -115,7 +115,8 @@ export function isFollowUpDue(dateStr, daysThreshold = 3) {
 export const SHEETS = {
   APPLICATIONS: 'Applications',
   REFERRALS: 'Referrals',
-  INTERVIEWS: 'Interviews'
+  INTERVIEWS: 'Interviews',
+  ACTION_ITEMS: 'ActionItems',
 }
 
 // ── Status options ────────────────────────────────────────────────

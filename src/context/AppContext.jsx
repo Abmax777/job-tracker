@@ -15,6 +15,7 @@ export function AppProvider({ children }) {
   const [applications, setApplications] = useState([])
   const [referrals, setReferrals] = useState([])
   const [interviews, setInterviews] = useState([])
+  const [actionItems, setActionItems] = useState([])
   const [loading, setLoading] = useState(true)
 
   // ── Load all data on mount ──────────────────────────────────────
@@ -25,14 +26,31 @@ export function AppProvider({ children }) {
   async function loadAllData() {
     setLoading(true)
     try {
-      const [apps, refs, ints] = await Promise.all([
+      const [apps, refs, ints, items] = await Promise.all([
         getSheetData(SHEETS.APPLICATIONS),
         getSheetData(SHEETS.REFERRALS),
-        getSheetData(SHEETS.INTERVIEWS)
+        getSheetData(SHEETS.INTERVIEWS),
+        getSheetData(SHEETS.ACTION_ITEMS),
       ])
       setApplications(apps)
       setReferrals(refs)
       setInterviews(ints)
+      // Only show undismissed items; auto-hide if deadline passed > 1 day ago
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      const yesterday = new Date(today)
+      yesterday.setDate(today.getDate() - 1)
+      setActionItems(
+        (items || []).filter(item => {
+          if (item.Dismissed === "true") return false
+          if (item.Deadline) {
+            const d = new Date(item.Deadline)
+            d.setHours(0, 0, 0, 0)
+            if (d < yesterday) return false  // expired > 1 day ago
+          }
+          return true
+        })
+      )
     } catch (err) {
       toast.error("Failed to load data")
     } finally {
@@ -220,6 +238,30 @@ export function AppProvider({ children }) {
     return success
   }
 
+  // ── Action items ────────────────────────────────────────────────
+  async function dismissActionItem(item) {
+    // Reconstruct the full row with Dismissed = "true" (column order matches sheet headers)
+    const row = [
+      item.ID,
+      item.Type,
+      item.Company,
+      item.Role,
+      item.Subject,
+      item.Deadline,
+      item.Link,
+      item["Email Date"],
+      "true",               // Dismissed
+      item["Message ID"],
+    ]
+    const success = await updateRow(SHEETS.ACTION_ITEMS, item._rowIndex, row)
+    if (success) {
+      setActionItems(prev => prev.filter(i => i._rowIndex !== item._rowIndex))
+      toast.success("Marked as done!")
+    } else {
+      toast.error("Failed to dismiss item")
+    }
+  }
+
   // ── Computed stats for dashboard ────────────────────────────────
   const stats = {
     totalApplications: applications.length,
@@ -238,6 +280,7 @@ export function AppProvider({ children }) {
       applications,
       referrals,
       interviews,
+      actionItems,
       loading,
       stats,
       loadAllData,
@@ -250,6 +293,7 @@ export function AppProvider({ children }) {
       addInterview,
       updateInterview,
       deleteInterview,
+      dismissActionItem,
     }}>
       {children}
     </AppContext.Provider>

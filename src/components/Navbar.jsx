@@ -12,7 +12,7 @@ const NAV_ITEMS = [
 ]
 
 export default function Sidebar() {
-  const { stats, loadAllData } = useApp()
+  const { stats, loadAllData, actionItems } = useApp()
   const [refreshing, setRefreshing] = useState(false)
   const isMobile = useIsMobile()
 
@@ -27,6 +27,8 @@ export default function Sidebar() {
     "/referrals":    stats.totalReferrals,
     "/interviews":   stats.totalInterviews,
   }
+
+  const urgentCount = (actionItems || []).length
 
   // ── Mobile: glass bottom tab bar ─────────────────────────────
   if (isMobile) {
@@ -55,7 +57,18 @@ export default function Sidebar() {
               <>
                 <div style={{ position: "relative" }}>
                   <Icon size={20} strokeWidth={isActive ? 2.2 : 1.8} />
-                  {counts[to] > 0 && (
+                  {/* Urgent action items badge on Dashboard icon */}
+                  {to === "/dashboard" && urgentCount > 0 && (
+                    <span style={{
+                      position: "absolute", top: "-4px", right: "-6px",
+                      fontSize: "9px", fontWeight: "700",
+                      background: "#f85149", color: "#fff",
+                      borderRadius: "999px", padding: "1px 4px", lineHeight: 1.4,
+                    }}>
+                      {urgentCount}
+                    </span>
+                  )}
+                  {to !== "/dashboard" && counts[to] > 0 && (
                     <span style={{
                       position: "absolute", top: "-4px", right: "-6px",
                       fontSize: "9px", fontWeight: "700",
@@ -140,7 +153,16 @@ export default function Sidebar() {
                 <Icon size={16} strokeWidth={1.8} />
                 <span style={{ fontSize: "13px", fontWeight: "500" }}>{label}</span>
               </div>
-              {counts[to] > 0 && (
+              {/* Urgent badge for Dashboard, count badge for other pages */}
+              {to === "/dashboard" && urgentCount > 0 ? (
+                <span style={{
+                  fontSize: "11px", fontWeight: "700",
+                  color: "#fff", background: "#f85149",
+                  padding: "1px 7px", borderRadius: "999px"
+                }}>
+                  {urgentCount}
+                </span>
+              ) : to !== "/dashboard" && counts[to] > 0 ? (
                 <span style={{
                   fontSize: "11px", fontWeight: "600",
                   color: "#a78bfa", background: "rgba(167,139,250,0.15)",
@@ -148,7 +170,7 @@ export default function Sidebar() {
                 }}>
                   {counts[to]}
                 </span>
-              )}
+              ) : null}
             </NavLink>
           ))}
         </div>
