@@ -1,4 +1,15 @@
 import { createContext, useContext, useEffect, useState } from "react"
+
+// ── Local dismissed cache (survives refresh, per-device) ──────────
+const DISMISSED_KEY = "jobtracker_dismissed_action_items"
+function getLocalDismissed() {
+  try { return new Set(JSON.parse(localStorage.getItem(DISMISSED_KEY) || "[]")) }
+  catch { return new Set() }
+}
+function addLocalDismissed(id) {
+  const ids = getLocalDismissed(); ids.add(id)
+  localStorage.setItem(DISMISSED_KEY, JSON.stringify([...ids]))
+}
 import {
   getSheetData,
   appendRow,
@@ -47,9 +58,11 @@ export function AppProvider({ children }) {
     setInterviews(ints)
     const today = new Date(); today.setHours(0, 0, 0, 0)
     const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1)
+    const localDismissed = getLocalDismissed()
     setActionItems(
       (items || []).filter(item => {
         if (item.Dismissed === "true") return false
+        if (localDismissed.has(item.ID)) return false  // dismissed on this device
         if (item.Deadline) {
           const d = new Date(item.Deadline); d.setHours(0, 0, 0, 0)
           if (d < yesterday) return false
@@ -217,18 +230,16 @@ export function AppProvider({ children }) {
 
   // ── Action items ────────────────────────────────────────────────
   async function dismissActionItem(item) {
-    // Optimistic: remove immediately
+    // Persist to localStorage first — survives refresh regardless of sheet write speed
+    addLocalDismissed(item.ID)
     setActionItems(prev => prev.filter(i => i._rowIndex !== item._rowIndex))
     toast.success("Marked as done!")
+    // Best-effort sheet sync (fire and forget — localStorage is the reliable source)
     const row = [
       item.ID, item.Type, item.Company, item.Role, item.Subject,
       item.Deadline, item.Link, item["Email Date"], "true", item["Message ID"],
     ]
-    const success = await updateRow(SHEETS.ACTION_ITEMS, item._rowIndex, row)
-    if (!success) {
-      setActionItems(prev => [...prev, item])
-      toast.error("Failed to sync — please try again")
-    }
+    updateRow(SHEETS.ACTION_ITEMS, item._rowIndex, row)
   }
 
   // ── Computed stats for dashboard ────────────────────────────────
