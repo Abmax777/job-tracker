@@ -276,14 +276,17 @@ export default function Interviews() {
             <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
               <div>
                 <label style={S.label}>Company *</label>
-                {companies.length > 0 ? (
-                  <select required value={form.company} onChange={e => setForm({ ...form, company: e.target.value })} style={S.select}>
-                    <option value="">Select company</option>
-                    {companies.map(c => <option key={c}>{c}</option>)}
-                  </select>
-                ) : (
-                  <input required value={form.company} onChange={e => setForm({ ...form, company: e.target.value })} style={S.input} placeholder="e.g. Samsung SRINO" />
-                )}
+                <input
+                  required
+                  list="company-suggestions"
+                  value={form.company}
+                  onChange={e => setForm({ ...form, company: e.target.value })}
+                  style={S.input}
+                  placeholder="Type or select a company…"
+                />
+                <datalist id="company-suggestions">
+                  {companies.map(c => <option key={c} value={c} />)}
+                </datalist>
               </div>
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
