@@ -89,7 +89,7 @@ export function AppProvider({ children }) {
     setApplications(prev => [tempItem, ...prev])
     toast.success("Application added!")
     const success = await appendRow(SHEETS.APPLICATIONS, row)
-    if (success) { _fetchAndSet() } else {
+    if (!success) {
       setApplications(prev => prev.filter(a => a._rowIndex !== -1))
       toast.error("Failed to add — please try again")
     }
@@ -148,7 +148,7 @@ export function AppProvider({ children }) {
     setReferrals(prev => [tempItem, ...prev])
     toast.success("Referral logged!")
     const success = await appendRow(SHEETS.REFERRALS, row)
-    if (success) { _fetchAndSet() } else {
+    if (!success) {
       setReferrals(prev => prev.filter(r => r._rowIndex !== -1))
       toast.error("Failed to log — please try again")
     }
@@ -195,7 +195,7 @@ export function AppProvider({ children }) {
     setInterviews(prev => [tempItem, ...prev])
     toast.success("Interview logged!")
     const success = await appendRow(SHEETS.INTERVIEWS, row)
-    if (success) { _fetchAndSet() } else {
+    if (!success) {
       setInterviews(prev => prev.filter(i => i._rowIndex !== -1))
       toast.error("Failed to log — please try again")
     }
