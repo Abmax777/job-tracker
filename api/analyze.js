@@ -1,4 +1,4 @@
-const profile = require("./profile")
+import profile from "./profile.js"
 
 const SYSTEM_PROMPT = `You are an expert technical recruiter and career coach
 specializing in Android/mobile engineering roles in the Indian job market.

@@ -2,7 +2,7 @@
  * Your professional profile — used by the JD analyzer to score matches.
  * Fill this in accurately; the quality of the analysis depends on it.
  */
-module.exports = {
+export default {
   name: "Abhinav Sawarn",
   title: "Android / AOSP Engineer",
   experienceYears: 2, // update this
